@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH << File.join(__dir__, "../lib")
+require "goodcheck"
+require "goodcheck/cli"
+
+exit Goodcheck::CLI.new(stdout: STDOUT, stderr: STDERR).run(ARGV.dup)
