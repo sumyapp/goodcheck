@@ -1,7 +1,16 @@
 # Goodcheck - Regexp based customizable linter
 
-Tired to run `grep` on your source code?
-Try Goodcheck!
+Are you reviewing a pull request if the change contains deprecated API calls?
+Do you want to post a comment to ask the developer if a method call satisfies some condition to use that without causing an issue?
+What if a misspelling like `Github` for `GitHub` can be found automatically?
+
+Give Goodcheck a try to do them instead of you! 🎉
+
+Goodcheck is a customizable linter.
+You can define pairs of patterns and messages.
+It checks your program and when it detects a piece of text matching with the defined patterns, it prints your message which tells your teammates why it should be revised and how.
+Some part of code reviewing process can be automated.
+Everything you have to do is to define the rules, pairs of patterns and messages, and nothing will bother you at all. 😆
 
 ## Installation
 
@@ -11,98 +20,153 @@ $ gem install goodcheck
 
 Or you can use `bundler`!
 
-## Usage
-
-### Setup
+## Quickstart
 
 ```bash
 $ goodcheck init
+$ vim goodcheck.yml
+$ goodcheck check .
 ```
 
-The `init` command generate template of `goodcheck.yml` configuration file for you.
+The `init` command generates template of `goodcheck.yml` configuration file for you.
 Edit the config file to define patterns you want to check.
+Then run `check` command, and it will print matched texts.
 
-### goodcheck.yml
+## `goodcheck.yml`
 
-Define the patterns you want to check in your source code.
+An example of configuration is like the following:
 
 ```yaml
 rules:
-  - id: com.example.no_br
-    pattern: <br />
-    suffixes:
-      - .html.erb
-      - .html
+  - id: com.example.github
+    pattern: Github
     message: |
-      Try not using <br /> to format text in HTML
+      GitHub is GitHub, not Github
       
-      Using line breaks, <br />, is not recommended.
-      Use <p> or <div> tags to define paragraphs, and let user agent to break lines.
-    assert:
-      - <div>Text here.<br />Another text here.</div>
-    refute:
-      - |
-        <div>Text here.</div>
-        <div>Another text here.</div>
-  - id: com.example.no_nsdate_formatter_alloc
-    pattern:
-      regexp: "\bCALL_API\b"
-    suffixes:
-      - .js
-      - .ts
-      - .coffee
-    message: |
-      CALL_API should not be used
-      
-      CALL_API is too generic name and insufficient descriptive.
-      Try using more specific name.
-    assert:
-      - CALL_API
-      - "{ [CALL_API]: function() { ... } }"
-    refute:
-      - CALL_INDEX_API
-  - id: com.example.no_function
-    pattern:
-      token: function(
-    suffixes:
-      - .js
-      - .ts
-    message: |
-      We are in ES6 world!
-      
-      Use arrow function syntax `=>` instead of `function`
-    assert:
-      - "function () { console.log('hello world') }"
-      - "function(data) { ... }"
-    refute:
-      - "=> { console.log('hello world') }"
-      - "(data) => { ... }"
-  - id: com.example.no_redundant_parens
-    pattern:
-      token: ()=>
-    suffixes:
-      - .js
-      - .ts
-    message: |
-      
+      You may misspelling the name of the service!
+    justifications:
+      - When you mean a service different from GitHub
+      - When GitHub is renamed
+    glob:
+      - app/views/**/*.html.slim
+      - config/locales/**/*.yaml
+    pass:
+      - <a>Signup via GitHub</a>
+    fail:
+      - <a>Signup via Github</a>
 ```
 
-## Patterns
+The *rule* hash contains the following keys.
 
-Goodcheck allows to write three kind of patterns.
+* `id`: a string to identify rules (required)
+* `pattern`: a *pattern* or a sequence of *pattern*s (required)
+* `message`: a string to tell writers why the code piece should be revised (required)
+* `justification`: a sequence of strings to tell writers when a exception can be allowed (optional)
+* `glob`: a *glob* or a sequence of *glob*s (optional)
+* `pass`: a string, or a sequence of strings, which does not match given pattern (optional)
+* `fail`: a string, or a sequence of strings, which does match given pattern (optional)
 
-* `regexp` pattern, compiles to a regexp of Ruby
-* `literal` pattern, compiles to a regexp which corresponds to the input literal
-* `token` pattern, compiles to a special *tokenizing* regexp
+### *pattern*
 
-### Token pattern
+A *pattern* can be a *literal pattern*, *regexp pattern*, *token pattern*, or a string.
+When a string is given, it is interpreted as a *literal pattern* with `case_insensitive: false`.
 
-*Token pattern* allows to define a regexp which is almost tokenized to wide range of programming languages.
 
-* `function()` compiles to `/\bfunction\s*\(\s*\)/`
-* `[NSDateFormatter alloc]` compiles to `/\[\s*NSDateFormatter\s+alloc\s*\]/`
+#### *literal pattern*
+ 
+*literal pattern* allows you to construct a regexp which matches exactly to the `literal` string.
 
-The translation is defined as the below:
+```yaml
+id: com.sample.GitHub
+pattern:
+  literal: Github
+  case_insensitive: false
+message: Write GitHub, not Github
+```
+
+All regexp meta characters included in the `literal` value will be escaped.
+`case_insensitive` is an optional key and the default is `false`.
+
+#### *regexp pattern*
+
+*regexp pattern* allows you to write a regexp with meta chars.
+
+```yaml
+id: com.sample.digits
+pattern:
+  regexp: \d{4,}
+  case_insensitive: true
+  multiline: false
+message: Insert delimiters when writing large numbers
+justification:
+  - When you are not writing numbers, including phone numbers, zip code, ...
+```
+
+It accepts two optional attributes, `case_insensitive` and `multiline`.
+The default value of `case_insensitive` and `multiline` are `true` and `false` correspondingly.
+
+#### *token pattern*
+
+*token pattern* compiles to a *tokenized* regexp.
+
+```yaml
+id: com.sample.no-blink
+pattern:
+  token: "<blink"
+message: Stop using <blink> tag 
+glob: "**/*.html"
+justifications:
+  - If Lynx is the major target of the web site
+```
+
+It tries to tokenize the input and generates a regexp which matches sequence of tokens.
+The tokenization is heuristic and may not work well for your programming language.
+In that case, try using *regexp pattern*.
+
+The generated regexp of `<blink` is `<\s*blink\b`.
+It matches with `<blink />` and `< BLINK>`, but does not match with `https://www.chromium.org/blink`.
+
+## Commands
+
+### `goodcheck init [options]`
+
+The `init` command generates an example of configuration file.
+
+Available options are:
+
+* `-c=[CONFIG]`, `--config=[CONFIG]` to specify the configuration file name to generate
+* `--force` to allow overwriting existing config file
+
+### `goodcheck check [options] targets...`
+
+The `check` command checks your programs under `targets...`.
+You can pass:
+
+* Directory paths, or
+* Paths to files
+
+When you omit `targets`, it checks all files in `.`.
+
+Available options are:
+
+* `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file
+* `-R [rule]`, `--rule=[rule]` to specify the rules you want to check
+* `--format=[text|json]` to specify output format
+
+### `goodcheck test [options]`
+
+The `test` command tests rules.
+The test contains:
+
+* Validation of rule `id` uniqueness
+* If `pass` examples does not match with any of `pattern`s
+* If `fail` examples matches with some of `pattern`s
+
+Use `test` command when you add new rule to be sure you are writing rules correctly.
+
+Available options is:
+
+* `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file
 
 ## Development
 
