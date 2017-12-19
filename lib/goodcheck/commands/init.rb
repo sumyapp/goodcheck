@@ -4,7 +4,7 @@ module Goodcheck
       CONFIG = <<-EOC
 rules:
   - id: com.example.1
-    pattern: GitHub
+    pattern: Github
     message: Do you want to write GitHub?
     glob: 
       - "**/*.rb"
