@@ -10,7 +10,7 @@ Goodcheck is a customizable linter.
 You can define pairs of patterns and messages.
 It checks your program and when it detects a piece of text matching with the defined patterns, it prints your message which tells your teammates why it should be revised and how.
 Some part of code reviewing process can be automated.
-Everything you have to do is to define the rules, pairs of patterns and messages, and nothing will bother you at all. 😆
+Everything you have to do is to define the rules, pairs of patterns and messages, and nothing will bother you. 😆
 
 ## Installation
 
@@ -25,7 +25,7 @@ Or you can use `bundler`!
 ```bash
 $ goodcheck init
 $ vim goodcheck.yml
-$ goodcheck check .
+$ goodcheck check
 ```
 
 The `init` command generates template of `goodcheck.yml` configuration file for you.
@@ -71,7 +71,6 @@ The *rule* hash contains the following keys.
 A *pattern* can be a *literal pattern*, *regexp pattern*, *token pattern*, or a string.
 When a string is given, it is interpreted as a *literal pattern* with `case_insensitive: false`.
 
-
 #### *literal pattern*
  
 *literal pattern* allows you to construct a regexp which matches exactly to the `literal` string.
@@ -105,6 +104,9 @@ justification:
 It accepts two optional attributes, `case_insensitive` and `multiline`.
 The default value of `case_insensitive` and `multiline` are `true` and `false` correspondingly.
 
+The regexp will be passed to `Regexp.compile`.
+The precise definition of regular expression can be found in the documentation for Ruby.
+
 #### *token pattern*
 
 *token pattern* compiles to a *tokenized* regexp.
@@ -126,6 +128,25 @@ In that case, try using *regexp pattern*.
 The generated regexp of `<blink` is `<\s*blink\b`.
 It matches with `<blink />` and `< BLINK>`, but does not match with `https://www.chromium.org/blink`.
 
+### *glob*
+
+A *glob* can be a string, or a hash.
+
+```yaml
+glob:
+  pattern: "legacy/**/*.rb"
+  encoding: EUC-JP
+```
+
+The hash can have an optional `encoding` attribute.
+You can specify encoding of the file by the names defined for ruby.
+The list of all available encoding names can be found by `$ ruby -e "puts Encoding.name_list"`.
+The default value is `UTF-8`.
+
+If you write a string as a `glob`, the string value can be the `pattern` of the glob, without `encoding` attribute.
+
+If you omit `glob` attribute in a rule, the rule will be applied to all files given to `goodcheck`.
+
 ## Commands
 
 ### `goodcheck init [options]`
@@ -134,8 +155,8 @@ The `init` command generates an example of configuration file.
 
 Available options are:
 
-* `-c=[CONFIG]`, `--config=[CONFIG]` to specify the configuration file name to generate
-* `--force` to allow overwriting existing config file
+* `-c=[CONFIG]`, `--config=[CONFIG]` to specify the configuration file name to generate.
+* `--force` to allow overwriting existing config file.
 
 ### `goodcheck check [options] targets...`
 
@@ -143,30 +164,30 @@ The `check` command checks your programs under `targets...`.
 You can pass:
 
 * Directory paths, or
-* Paths to files
+* Paths to files.
 
 When you omit `targets`, it checks all files in `.`.
 
 Available options are:
 
-* `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file
-* `-R [rule]`, `--rule=[rule]` to specify the rules you want to check
-* `--format=[text|json]` to specify output format
+* `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file.
+* `-R [rule]`, `--rule=[rule]` to specify the rules you want to check.
+* `--format=[text|json]` to specify output format.
 
 ### `goodcheck test [options]`
 
 The `test` command tests rules.
 The test contains:
 
-* Validation of rule `id` uniqueness
-* If `pass` examples does not match with any of `pattern`s
-* If `fail` examples matches with some of `pattern`s
+* Validation of rule `id` uniqueness.
+* If `pass` examples does not match with any of `pattern`s.
+* If `fail` examples matches with some of `pattern`s.
 
 Use `test` command when you add new rule to be sure you are writing rules correctly.
 
 Available options is:
 
-* `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file
+* `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file.
 
 ## Development
 
