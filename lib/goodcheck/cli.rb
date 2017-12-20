@@ -60,7 +60,7 @@ module Goodcheck
 
       reporter = case format
                  when "text", nil
-                   Reporters::Text.new(stdout: stdout, stderr: stderr)
+                   Reporters::Text.new(stdout: stdout)
                  when "json"
                    Reporters::JSON.new(stdout: stdout, stderr: stderr)
                  else
@@ -68,7 +68,7 @@ module Goodcheck
                    return 1
                  end
 
-      Commands::Check.new(reporter: reporter, config_path: config_path, rules: rules, targets: targets).run
+      Commands::Check.new(reporter: reporter, config_path: config_path, rules: rules, targets: targets, stderr: stderr).run
     end
 
     def test(args)

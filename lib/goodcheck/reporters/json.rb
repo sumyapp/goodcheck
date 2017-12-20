@@ -45,10 +45,6 @@ module Goodcheck
       def issue(issue)
         issues << issue
       end
-
-      def error(path, exception)
-        stderr.puts "#{path}: #{exception.inspect}"
-      end
     end
   end
 end

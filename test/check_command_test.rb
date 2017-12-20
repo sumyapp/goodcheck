@@ -30,8 +30,8 @@ EOF
 EOF
 
       builder.cd do
-        reporter = Reporters::Text.new(stdout: stdout, stderr: stderr)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter)
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
 
         assert_equal 0, check.run
 
@@ -52,8 +52,8 @@ rules:
 EOF
 
       builder.cd do
-        reporter = Reporters::Text.new(stdout: stdout, stderr: stderr)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter)
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
 
         assert_equal 1, check.run
 
@@ -71,8 +71,8 @@ rules:
 EOF
 
       builder.cd do
-        reporter = Reporters::Text.new(stdout: stdout, stderr: stderr)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter)
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
 
         assert_equal 1, check.run
 
@@ -103,8 +103,8 @@ EOF
 EOF
 
       builder.cd do
-        reporter = Reporters::Text.new(stdout: stdout, stderr: stderr)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter)
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
 
         assert_equal 0, check.run
 
@@ -127,8 +127,8 @@ EOF
       builder.file name: Pathname("text_file"), content: "猫ねこ🐈"
 
       builder.cd do
-        reporter = Reporters::Text.new(stdout: stdout, stderr: stderr)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter)
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
 
         assert_equal 0, check.run
 
@@ -141,8 +141,8 @@ EOF
   def test_no_config
     TestCaseBuilder.tmpdir do |builder|
       builder.cd do
-        reporter = Reporters::Text.new(stdout: stdout, stderr: stderr)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter)
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
 
         assert_equal 1, check.run
 

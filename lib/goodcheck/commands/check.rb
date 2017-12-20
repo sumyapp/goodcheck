@@ -5,14 +5,16 @@ module Goodcheck
       attr_reader :rules
       attr_reader :targets
       attr_reader :reporter
+      attr_reader :stderr
 
       include ConfigLoading
 
-      def initialize(config_path:, rules:, targets:, reporter:)
+      def initialize(config_path:, rules:, targets:, reporter:, stderr:)
         @config_path = config_path
         @rules = rules
         @targets = targets
         @reporter = reporter
+        @stderr = stderr
       end
 
       def run
@@ -29,16 +31,16 @@ module Goodcheck
         end
         0
       rescue Psych::Exception => exn
-        reporter.stderr.puts "Unexpected error happens while loading YAML file: #{exn.inspect}"
+        stderr.puts "Unexpected error happens while loading YAML file: #{exn.inspect}"
         exn.backtrace.each do |trace_loc|
-          reporter.stderr.puts "  #{trace_loc}"
+          stderr.puts "  #{trace_loc}"
         end
         1
       rescue StrongJSON::Type::Error => exn
-        reporter.stderr.puts "Invalid config at #{exn.path.map {|x| "[#{x}]" }.join}"
+        stderr.puts "Invalid config at #{exn.path.map {|x| "[#{x}]" }.join}"
         1
       rescue Errno::ENOENT => exn
-        reporter.stderr.puts "#{exn}"
+        stderr.puts "#{exn}"
         1
       end
 
@@ -62,7 +64,7 @@ module Goodcheck
 
                   yield buffer, rule
                 rescue ArgumentError => exn
-                  reporter.error(path, exn)
+                  stderr.puts "#{path}: #{exn.inspect}"
                 end
               end
             end
