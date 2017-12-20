@@ -9,6 +9,24 @@ class SmokeTest < Minitest::Test
     Open3.capture3(*(["bundle", "exec"] + commandline), chdir: chdir.to_s)
   end
 
+  def test_nocommand
+    TestCaseBuilder.tmpdir do |builder|
+      stdout, _, status = shell(goodcheck, chdir: builder.path)
+
+      assert_operator status, :success?
+      assert_match /#{Regexp.escape "Usage: goodcheck <command> [options] [args...]"}/, stdout
+    end
+  end
+
+  def test_help
+    TestCaseBuilder.tmpdir do |builder|
+      stdout, _, status = shell(goodcheck, "help", chdir: builder.path)
+
+      assert_operator status, :success?
+      assert_match /#{Regexp.escape "Usage: goodcheck <command> [options] [args...]"}/, stdout
+    end
+  end
+
   def test_init
     TestCaseBuilder.tmpdir do |builder|
       _, _, status = shell(goodcheck, "init", chdir: builder.path)

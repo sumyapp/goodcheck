@@ -10,18 +10,21 @@ module Goodcheck
       @stderr = stderr
     end
 
+    COMMANDS = {
+      init: "Generate a sample configuration file",
+      check: "Run check with a configuration",
+      test: "Test your configuration",
+      help: "Print this message"
+    }
+
+
     def run(args)
       command = args.shift&.to_sym
-      case command
-      when :check
-        check(args)
-      when :init
-        init(args)
-      when :test
-        test(args)
+
+      if COMMANDS.key?(command)
+        __send__(command, args)
       else
-        stdout.puts "Unknown command: #{command}"
-        1
+        help(args)
       end
     rescue => exn
       stderr.puts exn.inspect
@@ -94,6 +97,16 @@ module Goodcheck
       end.parse!(args)
 
       Commands::Init.new(stdout: stdout, stderr: stderr, path: config_path, force: force).run
+    end
+
+    def help(args)
+      stdout.puts "Usage: goodcheck <command> [options] [args...]"
+      stdout.puts ""
+      stdout.puts "Commands:"
+      COMMANDS.each do |c, msg|
+        stdout.puts "  goodcheck #{c}\t#{msg}"
+      end
+      0
     end
   end
 end
