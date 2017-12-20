@@ -33,7 +33,7 @@ module Goodcheck
       end
 
       def file(path)
-        stderr.puts "Checking #{path} ..."
+        stderr.puts "Checking #{path}..."
         yield
       end
 
