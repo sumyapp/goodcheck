@@ -4,6 +4,7 @@ require "goodcheck"
 require "minitest/autorun"
 require_relative "test_case_builder"
 require "open3"
+require "securerandom"
 
 module Assertions
   def assert_pattern(object, regexp: nil, source: nil)

@@ -114,6 +114,30 @@ EOF
     end
   end
 
+  def test_encoding_error
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: foo
+    message: Foo
+    pattern: 猫
+EOF
+
+      builder.file name: Pathname("binary_file"), content: SecureRandom.gen_random(100)
+      builder.file name: Pathname("text_file"), content: "猫ねこ🐈"
+
+      builder.cd do
+        reporter = Reporters::Text.new(stdout: stdout, stderr: stderr)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter)
+
+        assert_equal 0, check.run
+
+        assert_match %r(binary_file: #<ArgumentError: invalid byte sequence in UTF-8>), stderr.string
+        assert_match %r(text_file:1:猫ねこ🐈:\tFoo), stdout.string
+      end
+    end
+  end
+
   def test_no_config
     TestCaseBuilder.tmpdir do |builder|
       builder.cd do

@@ -49,17 +49,21 @@ module Goodcheck
               buffers = {}
 
               config.rules_for_path(path, rules_filter: rules) do |rule, glob|
-                encoding = glob&.encoding || Encoding.default_external.name
+                begin
+                  encoding = glob&.encoding || Encoding.default_external.name
 
-                if buffers[encoding]
-                  buffer = buffers[encoding]
-                else
-                  content = path.read(encoding: encoding).encode(Encoding.default_internal || Encoding::UTF_8)
-                  buffer = Buffer.new(path: path, content: content)
-                  buffers[encoding] = buffer
+                  if buffers[encoding]
+                    buffer = buffers[encoding]
+                  else
+                    content = path.read(encoding: encoding).encode(Encoding.default_internal || Encoding::UTF_8)
+                    buffer = Buffer.new(path: path, content: content)
+                    buffers[encoding] = buffer
+                  end
+
+                  yield buffer, rule
+                rescue ArgumentError => exn
+                  reporter.error(path, exn)
                 end
-
-                yield buffer, rule
               end
             end
           end

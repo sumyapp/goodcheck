@@ -31,6 +31,10 @@ module Goodcheck
         colored_line = line.byteslice(0, issue.location.start_column) + Rainbow(line.byteslice(issue.location.start_column, end_column - issue.location.start_column)).red + line.byteslice(end_column, line.bytesize - end_column)
         stdout.puts "#{issue.path}:#{issue.location.start_line}:#{colored_line}:\t#{issue.rule.message.lines.first.chomp}"
       end
+
+      def error(path, exception)
+        stderr.puts "#{path}: #{exception.inspect}"
+      end
     end
   end
 end
