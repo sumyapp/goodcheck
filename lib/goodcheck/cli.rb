@@ -14,7 +14,8 @@ module Goodcheck
       init: "Generate a sample configuration file",
       check: "Run check with a configuration",
       test: "Test your configuration",
-      help: "Print this message"
+      version: "Print version",
+      help: "Show goodcheck version and quit"
     }
 
 
@@ -97,6 +98,11 @@ module Goodcheck
       end.parse!(args)
 
       Commands::Init.new(stdout: stdout, stderr: stderr, path: config_path, force: force).run
+    end
+
+    def version(args)
+      stdout.puts "goodcheck #{VERSION}"
+      0
     end
 
     def help(args)
