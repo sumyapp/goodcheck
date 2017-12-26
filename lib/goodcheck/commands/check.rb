@@ -46,7 +46,7 @@ module Goodcheck
 
       def each_check
         targets.each do |target|
-          each_file target do |path|
+          each_file target, immediate: true do |path|
             reporter.file(path) do
               buffers = {}
 
@@ -72,7 +72,7 @@ module Goodcheck
         end
       end
 
-      def each_file(path, &block)
+      def each_file(path, immediate: false, &block)
         realpath = path.realpath
 
         case
@@ -81,7 +81,12 @@ module Goodcheck
             each_file(child, &block)
           end
         when realpath.file?
-          yield path
+          if path == config_path
+            # Skip config file unless explicitly given by command line
+            yield path if immediate
+          else
+            yield path
+          end
         end
       end
     end

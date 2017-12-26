@@ -150,4 +150,33 @@ EOF
       end
     end
   end
+
+  def test_check_ignores_config
+    TestCaseBuilder.tmpdir do |builder|
+      builder.cd do
+        reporter = Reporters::Text.new(stdout: stdout)
+        builder.file name: Pathname("README.md"), content: "foo"
+        builder.config content: <<EOF
+rules:
+  - id: foo
+    message: Foo
+    pattern: foo
+EOF
+
+        Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr).tap do |check|
+          assert_equal 0, check.run
+
+          assert_match /README.md/, stdout.string
+          refute_match /goodcheck.yml/, stdout.string
+        end
+
+        Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname("."), Pathname("goodcheck.yml")], reporter: reporter, stderr: stderr).tap do |check|
+          assert_equal 0, check.run
+
+          assert_match /README.md/, stdout.string
+          assert_match /goodcheck.yml/, stdout.string
+        end
+      end
+    end
+  end
 end
