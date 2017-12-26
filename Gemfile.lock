@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    goodcheck (0.1.0)
+    goodcheck (0.2.0)
       activesupport (~> 5.0)
       rainbow (~> 3.0.0)
       strong_json (~> 0.5.0)
