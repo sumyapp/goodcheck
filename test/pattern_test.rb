@@ -23,6 +23,13 @@ class PatternTest < Minitest::Test
     refute_match regexp, "Hello World <br >"
   end
 
+  def test_tokenize4
+    regexp = Goodcheck::Pattern.compile_tokens("沖縄Ruby会議")
+    assert_match regexp, "沖縄Ruby会議"
+    assert_match regexp, "沖縄 Ruby 会議"
+    refute_match regexp, "沖 縄Ruby会議"
+  end
+
   def test_literal
     pattern = Goodcheck::Pattern.literal("hello.world", case_insensitive: true)
     assert_equal /hello\.world/i, pattern.regexp

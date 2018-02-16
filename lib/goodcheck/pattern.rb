@@ -34,7 +34,7 @@ module Goodcheck
           tokens << Regexp.escape(s.matched)
         when s.scan(/\s+/)
           tokens << '\s+'
-        when s.scan(/(\p{Letter}|\w)+/)
+        when s.scan(/\w+|[\p{Letter}&&\p{^ASCII}]+/)
           tokens << Regexp.escape(s.matched)
         when s.scan(%r{[!"#$%&'=\-^~¥\\|`@*:+;/?.,]+})
           tokens << Regexp.escape(s.matched.rstrip)
