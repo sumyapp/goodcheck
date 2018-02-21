@@ -64,7 +64,7 @@ EOF
         assert_equal 0, check.run
 
         assert_match %r(test\.yml:1:text: Github), stdout.string
-        assert_match %r(link\.yml:1:text: Github), stdout.string
+        refute_match %r(link\.yml:1:text: Github), stdout.string
       end
     end
   end

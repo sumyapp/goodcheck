@@ -74,6 +74,8 @@ module Goodcheck
 
       def each_file(path, immediate: false, &block)
         case
+        when path.symlink?
+          # noop
         when path.directory?
           path.children.each do |child|
             each_file(child, &block)
