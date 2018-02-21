@@ -73,14 +73,12 @@ module Goodcheck
       end
 
       def each_file(path, immediate: false, &block)
-        realpath = path.realpath
-
         case
-        when realpath.directory?
+        when path.directory?
           path.children.each do |child|
             each_file(child, &block)
           end
-        when realpath.file?
+        when path.file?
           if path == config_path
             # Skip config file unless explicitly given by command line
             yield path if immediate

@@ -27,6 +27,10 @@ class TestCaseBuilder
     (path + name).write(content.force_encoding(Encoding::ASCII_8BIT))
   end
 
+  def symlink(name:, original:)
+    (path + name).make_symlink(original)
+  end
+
   def self.tmpdir
     Dir.mktmpdir do |dir|
       yield self.new(path: Pathname(dir))

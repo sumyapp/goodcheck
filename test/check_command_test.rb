@@ -42,6 +42,60 @@ EOF
     end
   end
 
+  def test_symlink_check
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: com.example.1
+    pattern: Github
+    message: Do you want to write GitHub?
+EOF
+
+      builder.file name: Pathname("test.yml"), content: <<EOF
+text: Github
+EOF
+
+      builder.symlink name: Pathname("link.yml"), original: Pathname("test.yml")
+
+      builder.cd do
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
+
+        assert_equal 0, check.run
+
+        assert_match %r(test\.yml:1:text: Github), stdout.string
+        assert_match %r(link\.yml:1:text: Github), stdout.string
+      end
+    end
+  end
+
+  def test_broken_symlink_check
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: com.example.1
+    pattern: Github
+    message: Do you want to write GitHub?
+EOF
+
+      builder.file name: Pathname("test.yml"), content: <<EOF
+text: Github
+EOF
+
+      builder.symlink name: Pathname("link.yml"), original: Pathname("test.yml")
+
+      builder.cd do
+        # Break `link.yml`
+        Pathname("test.yml").delete
+
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
+
+        assert_equal 0, check.run
+      end
+    end
+  end
+
   def test_broken_yaml_error
     TestCaseBuilder.tmpdir do |builder|
       builder.config content: <<EOF
