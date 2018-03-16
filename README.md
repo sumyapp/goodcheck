@@ -20,6 +20,8 @@ $ gem install goodcheck
 
 Or you can use `bundler`!
 
+If you would not like to install Goodcheck to system (e.g. you would not liek to install Ruby 2.4 or higher), you can use a docker image. [See below](#docker-image).
+
 ## Quickstart
 
 ```bash
@@ -188,6 +190,20 @@ Use `test` command when you add new rule to be sure you are writing rules correc
 Available options is:
 
 * `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file.
+
+## Docker image
+
+You can use a docker image to use Goodcheck.
+
+```bash
+$ git clone https://github.com/sideci/goodcheck
+$ cd goodcheck
+$ git checkout v1.0.0 # If you would like to use stable version.
+$ docker build -t goodcheck:latest .
+
+$ cd /path/to/your/project
+$ docker run -it --rm -v "$(pwd):/work" goodcheck:latest goodcheck check
+```
 
 ## Development
 
