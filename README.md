@@ -20,7 +20,7 @@ $ gem install goodcheck
 
 Or you can use `bundler`!
 
-If you would not like to install Goodcheck to system (e.g. you would not liek to install Ruby 2.4 or higher), you can use a docker image. [See below](#docker-image).
+If you would not like to install Goodcheck to system (e.g. you would not like to install Ruby 2.4 or higher), you can use a docker image. [See below](#docker-image).
 
 ## Quickstart
 
