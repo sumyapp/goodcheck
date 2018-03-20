@@ -198,7 +198,6 @@ You can use a docker image to use Goodcheck.
 ```bash
 $ git clone https://github.com/sideci/goodcheck
 $ cd goodcheck
-$ git checkout v1.0.0 # If you would like to use stable version.
 $ docker build -t goodcheck:latest .
 
 $ cd /path/to/your/project
