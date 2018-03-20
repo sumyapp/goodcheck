@@ -8,3 +8,9 @@ Rake::TestTask.new(:test) do |t|
 end
 
 task :default => :test
+
+namespace :docker do
+  task :build do
+    sh 'docker', 'build', '-t', 'goodcheck:latest', '.'
+  end
+end
