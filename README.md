@@ -104,7 +104,7 @@ justification:
 ```
 
 It accepts two optional attributes, `case_insensitive` and `multiline`.
-The default value of `case_insensitive` and `multiline` are `true` and `false` correspondingly.
+The default values of `case_insensitive` and `multiline` are `false`.
 
 The regexp will be passed to `Regexp.compile`.
 The precise definition of regular expression can be found in the documentation for Ruby.
