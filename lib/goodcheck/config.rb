@@ -13,7 +13,7 @@ module Goodcheck
             if rule.globs.empty?
               [rule, nil]
             else
-              glob = rule.globs.find {|glob| path.fnmatch?(glob.pattern, File::FNM_PATHNAME) }
+              glob = rule.globs.find {|glob| path.fnmatch?(glob.pattern, File::FNM_PATHNAME | File::FNM_EXTGLOB) }
               if glob
                 [rule, glob]
               end
