@@ -44,7 +44,7 @@ rules:
     pattern: Github
     message: |
       GitHub is GitHub, not Github
-      
+
       You may misspelling the name of the service!
     justifications:
       - When you mean a service different from GitHub
@@ -74,7 +74,7 @@ A *pattern* can be a *literal pattern*, *regexp pattern*, *token pattern*, or a 
 When a string is given, it is interpreted as a *literal pattern* with `case_insensitive: false`.
 
 #### *literal pattern*
- 
+
 *literal pattern* allows you to construct a regexp which matches exactly to the `literal` string.
 
 ```yaml
@@ -117,7 +117,8 @@ The precise definition of regular expression can be found in the documentation f
 id: com.sample.no-blink
 pattern:
   token: "<blink"
-message: Stop using <blink> tag 
+  case_insensitive: true
+message: Stop using <blink> tag
 glob: "**/*.html"
 justifications:
   - If Lynx is the major target of the web site
@@ -129,6 +130,9 @@ In that case, try using *regexp pattern*.
 
 The generated regexp of `<blink` is `<\s*blink\b`.
 It matches with `<blink />` and `< BLINK>`, but does not match with `https://www.chromium.org/blink`.
+
+It accepts one optional attribute, `case_insensitive`.
+The default value of `case_insensitive` is `false`.
 
 ### *glob*
 
