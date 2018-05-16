@@ -20,11 +20,11 @@ module Goodcheck
       new(source: regexp, regexp: Regexp.compile(regexp, options))
     end
 
-    def self.token(tokens)
-      new(source: tokens, regexp: compile_tokens(tokens))
+    def self.token(tokens, case_insensitive:)
+      new(source: tokens, regexp: compile_tokens(tokens, case_insensitive: case_insensitive))
     end
 
-    def self.compile_tokens(source)
+    def self.compile_tokens(source, case_insensitive:)
       tokens = []
       s = StringScanner.new(source)
 
@@ -51,7 +51,10 @@ module Goodcheck
         tokens.last << '\b'
       end
 
-      Regexp.new(tokens.join('\s*').gsub(/\\s\*(\\s\+\\s\*)+/, '\s+'), Regexp::MULTILINE)
+      options = Regexp::MULTILINE
+      options |= Regexp::IGNORECASE if case_insensitive
+
+      Regexp.new(tokens.join('\s*').gsub(/\\s\*(\\s\+\\s\*)+/, '\s+'), options)
     end
   end
 end

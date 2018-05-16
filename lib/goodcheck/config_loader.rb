@@ -7,7 +7,7 @@ module Goodcheck
     Schema = StrongJSON.new do
       let :regexp_pattern, object(regexp: string, case_insensitive: boolean?, multiline: boolean?)
       let :literal_pattern, object(literal: string, case_insensitive: boolean?)
-      let :token_pattern, object(token: string)
+      let :token_pattern, object(token: string, case_insensitive: boolean?)
       let :pattern, enum(regexp_pattern, literal_pattern, token_pattern, string)
 
       let :encoding, enum(*Encoding.name_list.map {|name| literal(name) })
@@ -82,7 +82,8 @@ module Goodcheck
           Pattern.regexp(regexp, case_insensitive: ci, multiline: multiline)
         when pattern[:token]
           tok = pattern[:token]
-          Pattern.token(tok)
+          ci = pattern[:case_insensitive]
+          Pattern.token(tok, case_insensitive: ci)
         end
       end
     end

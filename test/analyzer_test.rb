@@ -45,7 +45,7 @@ NSArray *a = [ NSMutableArray
   end
 
   def test_analyzer_tokens
-    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.token("[NSMutableArray new]")))
+    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.token("[NSMutableArray new]", case_insensitive: false)))
 
     issues = analyzer.scan.to_a
 
@@ -70,7 +70,7 @@ NSArray *a = [ NSMutableArray
   end
 
   def test_analyzer_token_word_brake
-    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.token("Array")))
+    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.token("Array", case_insensitive: false)))
 
     issues = analyzer.scan.to_a
     assert_empty issues
