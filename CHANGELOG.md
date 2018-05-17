@@ -2,7 +2,7 @@
 
 ## master
 
-## 1.1.0 (2018-06-16)
+## 1.1.0 (2018-05-16)
 
 * Support `{}` syntax in glob. #11
 * Add `case_insensitive` option for `token` pattern. #10
