@@ -30,6 +30,7 @@ module Goodcheck
           }
         end
         stdout.puts ::JSON.dump(json)
+        json
       end
 
       def file(path)

@@ -11,7 +11,7 @@ class JSONReporterTest < Minitest::Test
   def test_reporter
     reporter = Reporters::JSON.new(stdout: stdout, stderr: stderr)
 
-    reporter.analysis do
+    json_analysis = reporter.analysis do
       reporter.file Pathname("foo.txt") do
         rule = Rule.new(id: "id", patterns: [], message: "Message", justifications: ["reason1", "reason2"], globs: [], fails: [], passes: [])
         reporter.rule rule do
@@ -38,5 +38,6 @@ class JSONReporterTest < Minitest::Test
                     message: "Message",
                     justifications: ["reason1", "reason2"]
                   }], json
+    assert_equal json, JSON.parse(JSON.dump(json_analysis), symbolize_names: true)
   end
 end
