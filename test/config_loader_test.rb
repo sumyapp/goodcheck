@@ -6,50 +6,54 @@ class ConfigLoaderTest < Minitest::Test
   ConfigLoader = Goodcheck::ConfigLoader
   Rule = Goodcheck::Rule
 
+  def stderr
+    @stderr ||= StringIO.new
+  end
+
   def test_load_pattern_string
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "")
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "", stderr: stderr)
     pattern = loader.load_pattern "foo.bar"
 
     assert_pattern pattern, regexp: /foo\.bar/, source: "foo.bar"
   end
 
   def test_load_literal_pattern_hash_ci
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "")
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "", stderr: stderr)
     pattern = loader.load_pattern({ literal: "foo.bar", case_insensitive: true })
 
     assert_pattern pattern, regexp: /foo\.bar/i, source: "foo.bar"
   end
 
   def test_load_literal_pattern_hash_cs
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "")
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "", stderr: stderr)
     pattern = loader.load_pattern({ literal: "foo.bar", case_insensitive: false })
 
     assert_pattern pattern, regexp: /foo\.bar/, source: "foo.bar"
   end
 
   def test_load_regexp_pattern
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "")
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "", stderr: stderr)
     pattern = loader.load_pattern({ regexp: "foo.bar" })
 
     assert_pattern pattern, regexp: /foo.bar/, source: "foo.bar"
   end
 
   def test_load_regexp_pattern_ci_multi
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "")
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "", stderr: stderr)
     pattern = loader.load_pattern({ regexp: "foo.bar", case_insensitive: true, multiline: true })
 
     assert_pattern pattern, regexp: /foo.bar/im, source: "foo.bar"
   end
 
   def test_load_token_pattern
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "")
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "", stderr: stderr)
     pattern = loader.load_pattern({ token: "foo.bar" })
 
     assert_pattern pattern, regexp: /\bfoo\s*\.\s*bar\b/m, source: "foo.bar"
   end
 
   def test_load_globs
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "")
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "", stderr: stderr)
 
     g1, g2, g3, _ = loader.load_globs(["foo", { pattern: "foo/bar" }, { pattern: "*.rb", encoding: "Shift_JIS" }])
 
@@ -64,7 +68,7 @@ class ConfigLoaderTest < Minitest::Test
   end
 
   def test_load_rule
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "")
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "", stderr: stderr)
     rule = loader.load_rule({ id: "com.id.1", message: "Some message", pattern: "foo.bar" })
 
     assert_instance_of Rule, rule
@@ -78,7 +82,7 @@ class ConfigLoaderTest < Minitest::Test
   end
 
   def test_load_rule_case
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "")
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "", stderr: stderr)
     rule = loader.load_rule({
                               id: "com.id.1",
                               message: "Some message",
@@ -107,15 +111,36 @@ class ConfigLoaderTest < Minitest::Test
     assert_equal [], rule.fails
   end
 
+  def test_load_rule_case_warning
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "", stderr: stderr)
+    loader.load_rule({
+                       id: "com.id.1",
+                       message: "Some message",
+                       pattern: [
+                         {
+                           literal: "foo",
+                           case_insensitive: true,
+                         },
+                         {
+                           literal: "foo.bar",
+                           case_insensitive: true,
+                         },
+                       ]
+                     })
+
+    assert_match /`case_insensitive` option is deprecated/, stderr.string
+    assert_equal 1, stderr.string.scan(/`case_insensitive` option is deprecated/).count
+  end
+
   def test_load_config_failure
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: [{}])
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: [{}], stderr: stderr)
     assert_raises StrongJSON::Type::Error do
       loader.load
     end
   end
 
   def test_load_config_failure2
-    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: <<-EOC)
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: <<-EOC, stderr: stderr)
 - id: com.id.1
   message: Some message
   pattern:
@@ -141,7 +166,8 @@ class ConfigLoaderTest < Minitest::Test
                                     glob: { pattern: "*.rb", encoding: "UNKNOWN_ENCODING😍"}
                                   }
                                 ]
-                              })
+                              },
+                              stderr: stderr)
 
     exn = nil
     begin
@@ -189,7 +215,8 @@ class ConfigLoaderTest < Minitest::Test
                                     fail: "baz"
                                   }
                                 ]
-                              })
+                              },
+                              stderr: stderr)
 
     loader.load
   end

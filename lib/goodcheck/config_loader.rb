@@ -37,10 +37,14 @@ module Goodcheck
 
     attr_reader :path
     attr_reader :content
+    attr_reader :stderr
+    attr_reader :printed_warnings
 
-    def initialize(path:, content:)
+    def initialize(path:, content:, stderr:)
       @path = path
       @content = content
+      @stderr = stderr
+      @printed_warnings = Set.new
     end
 
     def load
@@ -100,9 +104,17 @@ module Goodcheck
       when pattern.key?(:case_sensitive)
         pattern[:case_sensitive]
       when pattern.key?(:case_insensitive)
+        print_warning_once "👻 `case_insensitive` option is deprecated. Use `case_sensitive` option instead."
         !pattern[:case_insensitive]
       else
         true
+      end
+    end
+
+    def print_warning_once(message)
+      unless printed_warnings.include?(message)
+        stderr.puts "[Warning] " + message
+        printed_warnings << message
       end
     end
   end

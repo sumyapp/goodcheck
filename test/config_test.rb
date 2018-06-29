@@ -4,8 +4,12 @@ class ConfigTest < Minitest::Test
   ConfigLoader = Goodcheck::ConfigLoader
   Config = Goodcheck::Config
 
+  def stderr
+    @stderr ||= StringIO.new
+  end
+
   def test_rules_for_path
-    loader = ConfigLoader.new(path: nil, content: nil)
+    loader = ConfigLoader.new(path: nil, content: nil, stderr: stderr)
 
     config = Config.new(rules: [
       loader.load_rule({ id: "rule1", glob: ["**/*.rb"], message: "" }),
@@ -21,7 +25,7 @@ class ConfigTest < Minitest::Test
   end
 
   def test_rules_for_path_glob_empty
-    loader = ConfigLoader.new(path: nil, content: nil)
+    loader = ConfigLoader.new(path: nil, content: nil, stderr: stderr)
 
     config = Config.new(rules: [
       loader.load_rule({ id: "rule1", glob: [], message: "" }),
@@ -31,7 +35,7 @@ class ConfigTest < Minitest::Test
   end
 
   def test_rules_for_filter
-    loader = ConfigLoader.new(path: nil, content: nil)
+    loader = ConfigLoader.new(path: nil, content: nil, stderr: stderr)
 
     config = Config.new(rules: [
       loader.load_rule({ id: "rule1", glob: [], message: "" }),
