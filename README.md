@@ -71,7 +71,7 @@ The *rule* hash contains the following keys.
 ### *pattern*
 
 A *pattern* can be a *literal pattern*, *regexp pattern*, *token pattern*, or a string.
-When a string is given, it is interpreted as a *literal pattern* with `case_insensitive: false`.
+When a string is given, it is interpreted as a *literal pattern* with `case_sensitive: true`.
 
 #### *literal pattern*
 
@@ -81,12 +81,12 @@ When a string is given, it is interpreted as a *literal pattern* with `case_inse
 id: com.sample.GitHub
 pattern:
   literal: Github
-  case_insensitive: false
+  case_sensitive: true
 message: Write GitHub, not Github
 ```
 
 All regexp meta characters included in the `literal` value will be escaped.
-`case_insensitive` is an optional key and the default is `false`.
+`case_sensitive` is an optional key and the default is `true`.
 
 #### *regexp pattern*
 
@@ -96,15 +96,15 @@ All regexp meta characters included in the `literal` value will be escaped.
 id: com.sample.digits
 pattern:
   regexp: \d{4,}
-  case_insensitive: true
+  case_sensitive: false
   multiline: false
 message: Insert delimiters when writing large numbers
 justification:
   - When you are not writing numbers, including phone numbers, zip code, ...
 ```
 
-It accepts two optional attributes, `case_insensitive` and `multiline`.
-The default values of `case_insensitive` and `multiline` are `false`.
+It accepts two optional attributes, `case_sensitive` and `multiline`.
+The default values of `case_sensitive` and `multiline` are `true` and `false` respectively.
 
 The regexp will be passed to `Regexp.compile`.
 The precise definition of regular expression can be found in the documentation for Ruby.
@@ -117,7 +117,7 @@ The precise definition of regular expression can be found in the documentation f
 id: com.sample.no-blink
 pattern:
   token: "<blink"
-  case_insensitive: true
+  case_sensitive: false
 message: Stop using <blink> tag
 glob: "**/*.html"
 justifications:
@@ -131,8 +131,8 @@ In that case, try using *regexp pattern*.
 The generated regexp of `<blink` is `<\s*blink\b`.
 It matches with `<blink />` and `< BLINK>`, but does not match with `https://www.chromium.org/blink`.
 
-It accepts one optional attribute, `case_insensitive`.
-The default value of `case_insensitive` is `false`.
+It accepts one optional attribute, `case_sensitive`.
+The default value of `case_sensitive` is `true`.
 
 ### *glob*
 
