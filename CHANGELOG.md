@@ -2,6 +2,11 @@
 
 ## master
 
+## 1.2.0 (2018-06-29)
+
+* `case_insensitive` option is now renamed to `case_sensitive`. #4
+* Return analysis JSON object from JSON reporter. #13 (@aergonaut)
+
 ## 1.1.0 (2018-05-16)
 
 * Support `{}` syntax in glob. #11
