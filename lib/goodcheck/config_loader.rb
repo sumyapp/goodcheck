@@ -5,10 +5,17 @@ module Goodcheck
     class InvalidPattern < StandardError; end
 
     Schema = StrongJSON.new do
-      let :regexp_pattern, object(regexp: string, case_insensitive: boolean?, multiline: boolean?)
-      let :literal_pattern, object(literal: string, case_insensitive: boolean?)
-      let :token_pattern, object(token: string, case_insensitive: boolean?)
-      let :pattern, enum(regexp_pattern, literal_pattern, token_pattern, string)
+      let :deprecated_regexp_pattern, object(regexp: string, case_insensitive: boolean?, multiline: boolean?)
+      let :deprecated_literal_pattern, object(literal: string, case_insensitive: boolean?)
+      let :deprecated_token_pattern, object(token: string, case_insensitive: boolean?)
+
+      let :regexp_pattern, object(regexp: string, case_sensitive: boolean?, multiline: boolean?)
+      let :literal_pattern, object(literal: string, case_sensitive: boolean?)
+      let :token_pattern, object(token: string, case_sensitive: boolean?)
+
+      let :pattern, enum(regexp_pattern, literal_pattern, token_pattern,
+                         deprecated_regexp_pattern, deprecated_literal_pattern, deprecated_token_pattern,
+                         string)
 
       let :encoding, enum(*Encoding.name_list.map {|name| literal(name) })
       let :glob, object(pattern: string, encoding: optional(encoding))
@@ -68,23 +75,34 @@ module Goodcheck
     def load_pattern(pattern)
       case pattern
       when String
-        Pattern.literal(pattern, case_insensitive: false)
+        Pattern.literal(pattern, case_sensitive: true)
       when Hash
         case
         when pattern[:literal]
-          ci = pattern[:case_insensitive]
+          cs = case_sensitive?(pattern)
           literal = pattern[:literal]
-          Pattern.literal(literal, case_insensitive: ci)
+          Pattern.literal(literal, case_sensitive: cs)
         when pattern[:regexp]
           regexp = pattern[:regexp]
-          ci = pattern[:case_insensitive]
+          cs = case_sensitive?(pattern)
           multiline = pattern[:multiline]
-          Pattern.regexp(regexp, case_insensitive: ci, multiline: multiline)
+          Pattern.regexp(regexp, case_sensitive: cs, multiline: multiline)
         when pattern[:token]
           tok = pattern[:token]
-          ci = pattern[:case_insensitive]
-          Pattern.token(tok, case_insensitive: ci)
+          cs = case_sensitive?(pattern)
+          Pattern.token(tok, case_sensitive: cs)
         end
+      end
+    end
+
+    def case_sensitive?(pattern)
+      case
+      when pattern.key?(:case_sensitive)
+        pattern[:case_sensitive]
+      when pattern.key?(:case_insensitive)
+        !pattern[:case_insensitive]
+      else
+        true
       end
     end
   end

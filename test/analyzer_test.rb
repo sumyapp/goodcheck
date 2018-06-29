@@ -25,7 +25,7 @@ NSArray *a = [ NSMutableArray
   end
 
   def test_analyzer
-    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.literal("ipsum", case_insensitive: false)))
+    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.literal("ipsum", case_sensitive: true)))
 
     issues = analyzer.scan.to_a
 
@@ -35,7 +35,7 @@ NSArray *a = [ NSMutableArray
   end
 
   def test_analyzer_japanese
-    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.literal("吾輩", case_insensitive: false)))
+    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.literal("吾輩", case_sensitive: true)))
 
     issues = analyzer.scan.to_a
 
@@ -45,7 +45,7 @@ NSArray *a = [ NSMutableArray
   end
 
   def test_analyzer_tokens
-    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.token("[NSMutableArray new]", case_insensitive: false)))
+    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.token("[NSMutableArray new]", case_sensitive: true)))
 
     issues = analyzer.scan.to_a
 
@@ -58,8 +58,8 @@ NSArray *a = [ NSMutableArray
   def test_analyzer_no_duplicate
     analyzer = Analyzer.new(buffer: buffer, rule:
       new_rule("rule1",
-               Pattern.regexp("N.Array", case_insensitive: true, multiline: false),
-               Pattern.regexp("NSAr.ay", case_insensitive: true, multiline: false))
+               Pattern.regexp("N.Array", case_sensitive: false, multiline: false),
+               Pattern.regexp("NSAr.ay", case_sensitive: false, multiline: false))
     )
 
     issues = analyzer.scan.to_a
@@ -70,7 +70,7 @@ NSArray *a = [ NSMutableArray
   end
 
   def test_analyzer_token_word_brake
-    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.token("Array", case_insensitive: false)))
+    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.token("Array", case_sensitive: true)))
 
     issues = analyzer.scan.to_a
     assert_empty issues

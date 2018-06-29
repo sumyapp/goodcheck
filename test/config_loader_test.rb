@@ -77,12 +77,58 @@ class ConfigLoaderTest < Minitest::Test
     assert_equal [], rule.fails
   end
 
+  def test_load_rule_case
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "")
+    rule = loader.load_rule({
+                              id: "com.id.1",
+                              message: "Some message",
+                              pattern: [
+                                {
+                                  literal: "foo.bar",
+                                },
+                                {
+                                  literal: "foo.bar.baz",
+                                  case_insensitive: true,
+                                },
+                                {
+                                  literal: "foo",
+                                  case_sensitive: false
+                                }
+                              ]
+                            })
+
+    assert_instance_of Rule, rule
+    assert_equal "com.id.1", rule.id
+    assert_equal "Some message", rule.message
+    assert_equal [/foo\.bar/, /foo\.bar\.baz/i, /foo/i], rule.patterns.map(&:regexp)
+    assert_equal [], rule.justifications
+    assert_equal [], rule.globs
+    assert_equal [], rule.passes
+    assert_equal [], rule.fails
+  end
+
   def test_load_config_failure
     loader = ConfigLoader.new(path: Pathname("hello.yml"), content: [{}])
     assert_raises StrongJSON::Type::Error do
       loader.load
     end
   end
+
+  def test_load_config_failure2
+    loader = ConfigLoader.new(path: Pathname("hello.yml"), content: <<-EOC)
+- id: com.id.1
+  message: Some message
+  pattern:
+    literal: foo
+    case_sensitive: true
+    case_insensitive: false
+    EOC
+
+    assert_raises StrongJSON::Type::Error do
+      loader.load
+    end
+  end
+
 
   def test_load_encoding_failure
     loader = ConfigLoader.new(path: Pathname("hello.yml"),
