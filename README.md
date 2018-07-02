@@ -128,11 +128,12 @@ It tries to tokenize the input and generates a regexp which matches sequence of 
 The tokenization is heuristic and may not work well for your programming language.
 In that case, try using *regexp pattern*.
 
-The generated regexp of `<blink` is `<\s*blink\b`.
+The generated regexp of `<blink` is `<\s*blink\b/m`.
 It matches with `<blink />` and `< BLINK>`, but does not match with `https://www.chromium.org/blink`.
 
 It accepts one optional attribute, `case_sensitive`.
 The default value of `case_sensitive` is `true`.
+Note that the generated regexp is in multiline mode.
 
 ### *glob*
 
