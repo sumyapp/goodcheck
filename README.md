@@ -46,7 +46,7 @@ rules:
       GitHub is GitHub, not Github
 
       You may misspelling the name of the service!
-    justifications:
+    justification:
       - When you mean a service different from GitHub
       - When GitHub is renamed
     glob:
@@ -120,7 +120,7 @@ pattern:
   case_sensitive: false
 message: Stop using <blink> tag
 glob: "**/*.html"
-justifications:
+justification:
   - If Lynx is the major target of the web site
 ```
 
