@@ -55,7 +55,7 @@ module Goodcheck
 
     def load_rule(hash)
       id = hash[:id]
-      patterns = array(hash[:pattern]).map {|pat| load_pattern(pat) }
+      patterns = retrieve_patterns(hash)
       justifications = array(hash[:justification])
       globs = load_globs(array(hash[:glob]))
       message = hash[:message].chomp
@@ -63,6 +63,43 @@ module Goodcheck
       fails = array(hash[:fail])
 
       Rule.new(id: id, patterns: patterns, justifications: justifications, globs: globs, message: message, passes: passes, fails: fails)
+    end
+
+    def combine_literal_patterns(patterns, case_sensitive:)
+      return nil if patterns.empty?
+      literals = patterns.map do |pat|
+        str = pat.is_a?(String) ? pat : pat[:literal].to_s
+        Regexp.escape(str)
+      end
+      Pattern.regexp(literals.join('|'),
+                     case_sensitive: case_sensitive,
+                     multiline: false)
+    end
+
+    def literal_pattern?(pattern)
+      pattern.is_a?(String) || pattern[:literal]
+    end
+
+    def select_literal_pattern(patterns, case_sensitive:)
+      patterns.select do |pat|
+        if case_sensitive
+          literal_pattern?(pat) && case_sensitive?(pat)
+        else
+          literal_pattern?(pat) && !case_sensitive?(pat)
+        end
+      end
+    end
+
+    def retrieve_patterns(hash)
+      pat_array = array(hash[:pattern])
+      non_literal = pat_array.reject { |pat| literal_pattern?(pat) }
+      patterns = non_literal.map { |pat| load_pattern(pat) }
+      [true, false].each do |boolean|
+        literal = select_literal_pattern(pat_array, case_sensitive: boolean)
+        comb_pat = combine_literal_patterns(literal, case_sensitive: boolean)
+        patterns << comb_pat if comb_pat
+      end
+      patterns
     end
 
     def load_globs(globs)
@@ -100,6 +137,7 @@ module Goodcheck
     end
 
     def case_sensitive?(pattern)
+      return true if pattern.is_a?(String)
       case
       when pattern.key?(:case_sensitive)
         pattern[:case_sensitive]
