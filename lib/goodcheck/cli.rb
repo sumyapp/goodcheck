@@ -48,7 +48,7 @@ module Goodcheck
         opts.on("-R RULE", "--rule=RULE") do |rule|
           rules << rule
         end
-        opts.on("--format=FORMAT") do |f|
+        opts.on("--format=<text|json> [default: 'text']") do |f|
           format = f
         end
       end.parse!(args)
