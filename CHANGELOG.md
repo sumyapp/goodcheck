@@ -2,6 +2,12 @@
 
 ## master
 
+## 1.3.0 (2018-08-16)
+
+* Improved commandline option parsing #25 (@ybiquitous)
+* Skip loading dot-files #24 (@calancha)
+* Performance improvement on literal types #15 (@calancha)
+
 ## 1.2.0 (2018-06-29)
 
 * `case_insensitive` option is now renamed to `case_sensitive`. #4
