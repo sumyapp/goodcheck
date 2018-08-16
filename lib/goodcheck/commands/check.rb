@@ -72,17 +72,23 @@ module Goodcheck
         end
       end
 
+      def is_dotfile?(path)
+        /\A\.[^.]+/.match?(path.basename.to_s)
+      end
+
       def each_file(path, immediate: false, &block)
         case
         when path.symlink?
           # noop
         when path.directory?
-          path.children.each do |child|
-            each_file(child, &block)
+          if !is_dotfile?(path) || is_dotfile?(path) && immediate
+            path.children.each do |child|
+              each_file(child, &block)
+            end
           end
         when path.file?
-          if path == config_path
-            # Skip config file unless explicitly given by command line
+          if path == config_path || is_dotfile?(path)
+            # Skip dotfiles/config file unless explicitly given by command line
             yield path if immediate
           else
             yield path
