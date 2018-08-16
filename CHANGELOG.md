@@ -2,6 +2,10 @@
 
 ## master
 
+## 1.3.1 (2018-08-16)
+
+* Delete Gemfile.lock
+
 ## 1.3.0 (2018-08-16)
 
 * Improved commandline option parsing #25 (@ybiquitous)
