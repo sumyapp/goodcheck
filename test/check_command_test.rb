@@ -233,4 +233,29 @@ EOF
       end
     end
   end
+
+  def test_check_ignores_dot_files
+    TestCaseBuilder.tmpdir do |builder|
+      builder.cd do
+        reporter = Reporters::Text.new(stdout: stdout)
+        builder.file name: Pathname(".file"), content: "foo"
+        builder.config content: <<EOF
+rules:
+  - id: foo
+    message: Foo
+    pattern: foo
+EOF
+
+        Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr).tap do |check|
+          assert_equal 0, check.run
+          refute_match /\.file/, stdout.string
+        end
+
+        Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname("."), Pathname(".file")], reporter: reporter, stderr: stderr).tap do |check|
+          assert_equal 0, check.run
+          assert_match /\.file/, stdout.string
+        end
+      end
+    end
+  end
 end
