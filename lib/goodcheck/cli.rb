@@ -40,6 +40,7 @@ module Goodcheck
       targets = []
       rules = []
       format = nil
+      loglevel = Logger::ERROR
 
       OptionParser.new("Usage: goodcheck check [options] dirs...") do |opts|
         opts.on("-c CONFIG", "--config=CONFIG") do |config|
@@ -51,7 +52,15 @@ module Goodcheck
         opts.on("--format=<text|json> [default: 'text']") do |f|
           format = f
         end
+        opts.on("-v", "--verbose") do
+          loglevel = Logger::INFO
+        end
+        opts.on("-d", "--debug") do
+          loglevel = Logger::DEBUG
+        end
       end.parse!(args)
+
+      Goodcheck.logger.level = loglevel
 
       if args.empty?
         targets << Pathname(".")
@@ -68,6 +77,12 @@ module Goodcheck
                    stderr.puts "Unknown format: #{format}"
                    return 1
                  end
+
+
+      Goodcheck.logger.info "Configuration = #{config_path}"
+      Goodcheck.logger.info "Rules = [#{rules.join(", ")}]"
+      Goodcheck.logger.info "Format = #{format}"
+      Goodcheck.logger.info "Targets = [#{targets.join(", ")}]"
 
       Commands::Check.new(reporter: reporter, config_path: config_path, rules: rules, targets: targets, stderr: stderr).run
     end

@@ -5,9 +5,11 @@ require "yaml"
 require "json"
 require "active_support/core_ext/hash/indifferent_access"
 require "active_support/core_ext/integer/inflections"
+require "active_support/tagged_logging"
 require "rainbow"
 
 require "goodcheck/version"
+require "goodcheck/logger"
 
 require "goodcheck/glob"
 require "goodcheck/buffer"

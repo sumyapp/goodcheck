@@ -48,12 +48,17 @@ module Goodcheck
     end
 
     def load
-      Schema.config.coerce(content)
-      rules = content[:rules].map {|hash| load_rule(hash) }
-      Config.new(rules: rules)
+      Goodcheck.logger.info "Loading configuration: #{path}"
+      Goodcheck.logger.tagged "#{path}" do
+        Schema.config.coerce(content)
+        rules = content[:rules].map {|hash| load_rule(hash) }
+        Config.new(rules: rules)
+      end
     end
 
     def load_rule(hash)
+      Goodcheck.logger.debug "Loading rule: #{hash[:id]}"
+
       id = hash[:id]
       patterns = retrieve_patterns(hash)
       justifications = array(hash[:justification])
