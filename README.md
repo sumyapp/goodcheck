@@ -154,6 +154,26 @@ If you write a string as a `glob`, the string value can be the `pattern` of the 
 
 If you omit `glob` attribute in a rule, the rule will be applied to all files given to `goodcheck`.
 
+## Importing rules
+
+`goodcheck.yml` can have optional `import` attribute.
+
+```yaml
+rules: []
+import:
+  - /usr/share/goodcheck/rules.yml
+  - lib/goodcheck/rules.yml
+  - https://some.host/shared/rules.yml
+```
+
+Value of `import` can be an array of:
+
+- A string which represents an absolute file path,
+- A string which represents an relative file path from config file, or
+- A http/https URL which represents the location of rules
+
+The rules file is a YAML file with array of rules.
+
 ## Commands
 
 ### `goodcheck init [options]`
@@ -180,6 +200,9 @@ Available options are:
 * `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file.
 * `-R [rule]`, `--rule=[rule]` to specify the rules you want to check.
 * `--format=[text|json]` to specify output format.
+* `-v`, `--verbose` to be verbose.
+* `--debug` to print all debug messages.
+* `--force` to ignore downloaded caches
 
 ### `goodcheck test [options]`
 
@@ -195,6 +218,16 @@ Use `test` command when you add new rule to be sure you are writing rules correc
 Available options is:
 
 * `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file.
+* `-v`, `--verbose` to be verbose.
+* `--debug` to print all debug messages.
+* `--force` to ignore downloaded caches
+
+## Downloaded rules
+
+Downloaded rules are cached in `cache` directory in *goodcheck home directory*.
+The *goodcheck home directory* is `~/.goodcheck`, but you can customize the location with `GOODCHECK_HOME` environment variable.
+
+The cache expires in 3 minutes.
 
 ## Docker image
 
