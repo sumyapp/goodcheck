@@ -9,7 +9,7 @@ class ConfigTest < Minitest::Test
   end
 
   def test_rules_for_path
-    loader = ConfigLoader.new(path: nil, content: nil, stderr: stderr)
+    loader = ConfigLoader.new(path: nil, content: nil, stderr: stderr, import_loader: nil)
 
     config = Config.new(rules: [
       loader.load_rule({ id: "rule1", glob: ["**/*.rb"], message: "" }),
@@ -25,7 +25,7 @@ class ConfigTest < Minitest::Test
   end
 
   def test_rules_for_path_glob_empty
-    loader = ConfigLoader.new(path: nil, content: nil, stderr: stderr)
+    loader = ConfigLoader.new(path: nil, content: nil, stderr: stderr, import_loader: nil)
 
     config = Config.new(rules: [
       loader.load_rule({ id: "rule1", glob: [], message: "" }),
@@ -35,7 +35,7 @@ class ConfigTest < Minitest::Test
   end
 
   def test_rules_for_filter
-    loader = ConfigLoader.new(path: nil, content: nil, stderr: stderr)
+    loader = ConfigLoader.new(path: nil, content: nil, stderr: stderr, import_loader: nil)
 
     config = Config.new(rules: [
       loader.load_rule({ id: "rule1", glob: [], message: "" }),

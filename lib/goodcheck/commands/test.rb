@@ -2,19 +2,24 @@ module Goodcheck
   module Commands
     class Test
       include ConfigLoading
+      include HomePath
 
       attr_reader :stdout
       attr_reader :stderr
       attr_reader :config_path
+      attr_reader :home_path
+      attr_reader :force_download
 
-      def initialize(stdout:, stderr:, config_path:)
+      def initialize(stdout:, stderr:, config_path:, force_download:, home_path:)
         @stdout = stdout
         @stderr = stderr
         @config_path = config_path
+        @force_download = force_download
+        @home_path = home_path
       end
 
       def run
-        load_config!
+        load_config!(cache_path: cache_dir_path, force_download: force_download)
 
         validate_rule_uniqueness or return 1
         validate_rules or return 1

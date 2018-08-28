@@ -6,20 +6,25 @@ module Goodcheck
       attr_reader :targets
       attr_reader :reporter
       attr_reader :stderr
+      attr_reader :force_download
+      attr_reader :home_path
 
       include ConfigLoading
+      include HomePath
 
-      def initialize(config_path:, rules:, targets:, reporter:, stderr:)
+      def initialize(config_path:, rules:, targets:, reporter:, stderr:, home_path:, force_download:)
         @config_path = config_path
         @rules = rules
         @targets = targets
         @reporter = reporter
         @stderr = stderr
+        @force_download = force_download
+        @home_path = home_path
       end
 
       def run
         reporter.analysis do
-          load_config!
+          load_config!(force_download: force_download, cache_path: cache_dir_path)
           each_check do |buffer, rule|
             reporter.rule(rule) do
               analyzer = Analyzer.new(rule: rule, buffer: buffer)

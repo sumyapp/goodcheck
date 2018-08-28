@@ -28,7 +28,7 @@ rules:
       - "[NSArray new]"
       - "[NSArray  new ]"
 EOF
-      test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path)
+      test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path, force_download: nil, home_path: builder.path + "home")
 
       assert_equal 0, test.run
     end
@@ -47,7 +47,7 @@ rules:
     pattern: baz
     message: Baz
 EOF
-      test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path)
+      test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path, force_download: nil, home_path: builder.path + "home")
 
       assert_equal 1, test.run
       assert_match /Found 1 duplications/, stdout.string
@@ -67,7 +67,7 @@ rules:
       - foo bar
       - baz
 EOF
-      test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path)
+      test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path, force_download: nil, home_path: builder.path + "home")
 
       assert_equal 1, test.run
       assert_match /Testing rule sample\.1/, stdout.string

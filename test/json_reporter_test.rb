@@ -22,9 +22,6 @@ class JSONReporterTest < Minitest::Test
       end
     end
 
-    assert_match /#{Regexp.escape "Checking foo.txt..."}/, stderr.string
-    assert_match /#{Regexp.escape "Checking id..."}/, stderr.string
-
     json = JSON.parse(stdout.string, symbolize_names: true)
 
     assert_equal [{ rule_id: "id",
