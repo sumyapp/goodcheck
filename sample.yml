@@ -1,4 +1,15 @@
 rules:
+  - id: sample.typo
+    pattern:
+      - Github
+      - FaceBook
+    message: |
+      Write GitHub and Facebook
+
+      Their names are GitHub and Facebook.
+      Maybe, you are misspelling.
+    pass: GitHub
+    fail: Github
   - id: sample.debug_print
     pattern:
       - token: pp
@@ -10,19 +21,3 @@ rules:
       - render "app/views/welcome.html.erb"
     fail:
       - pp("Hello World")
-  - id: sample.index_zero
-    pattern:
-      - token: "[0]"
-    glob: "**/*.rb"
-    message: |
-      You can use #first instead of [0]
-    pass: array.first
-    fail: array[0]
-  - id: sample.closed_range
-    pattern:
-      - token: ...
-    glob: "**/*.rb"
-    message: |
-      Generally .. is better than ...
-    fail: 1...3
-    pass: 1..4
