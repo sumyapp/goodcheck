@@ -2,6 +2,8 @@
 
 ## master
 
+* Import rules from another location #26
+
 ## 1.3.1 (2018-08-16)
 
 * Delete Gemfile.lock

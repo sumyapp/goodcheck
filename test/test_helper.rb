@@ -5,6 +5,7 @@ require "minitest/autorun"
 require_relative "test_case_builder"
 require "open3"
 require "securerandom"
+require "tmpdir"
 
 module Assertions
   def assert_pattern(object, regexp: nil, source: nil)
@@ -25,3 +26,11 @@ module Outputs
 end
 
 Rainbow.enabled = false
+
+module TestHelper
+  def mktmpdir
+    Dir.mktmpdir do |dir|
+      yield Pathname(dir)
+    end
+  end
+end

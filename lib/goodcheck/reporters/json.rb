@@ -12,7 +12,6 @@ module Goodcheck
       end
 
       def analysis
-        stderr.puts "Starting analysis..."
         yield
 
         json = issues.map do |issue|
@@ -34,12 +33,10 @@ module Goodcheck
       end
 
       def file(path)
-        stderr.puts "Checking #{path}..."
         yield
       end
 
       def rule(rule)
-        stderr.puts "  Checking #{rule.id}..."
         yield
       end
 

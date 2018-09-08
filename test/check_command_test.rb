@@ -31,7 +31,7 @@ EOF
 
       builder.cd do
         reporter = Reporters::Text.new(stdout: stdout)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
         assert_equal 0, check.run
 
@@ -59,7 +59,7 @@ EOF
 
       builder.cd do
         reporter = Reporters::Text.new(stdout: stdout)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
         assert_equal 0, check.run
 
@@ -89,7 +89,7 @@ EOF
         Pathname("test.yml").delete
 
         reporter = Reporters::Text.new(stdout: stdout)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
         assert_equal 0, check.run
       end
@@ -107,7 +107,7 @@ EOF
 
       builder.cd do
         reporter = Reporters::Text.new(stdout: stdout)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
         assert_equal 1, check.run
 
@@ -126,7 +126,7 @@ EOF
 
       builder.cd do
         reporter = Reporters::Text.new(stdout: stdout)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
         assert_equal 1, check.run
 
@@ -158,7 +158,7 @@ EOF
 
       builder.cd do
         reporter = Reporters::Text.new(stdout: stdout)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
         assert_equal 0, check.run
 
@@ -182,7 +182,7 @@ EOF
 
       builder.cd do
         reporter = Reporters::Text.new(stdout: stdout)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
         assert_equal 0, check.run
 
@@ -196,7 +196,7 @@ EOF
     TestCaseBuilder.tmpdir do |builder|
       builder.cd do
         reporter = Reporters::Text.new(stdout: stdout)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
         assert_equal 1, check.run
 
@@ -217,14 +217,14 @@ rules:
     pattern: foo
 EOF
 
-        Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr).tap do |check|
+        Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home").tap do |check|
           assert_equal 0, check.run
 
           assert_match /README.md/, stdout.string
           refute_match /goodcheck.yml/, stdout.string
         end
 
-        Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname("."), Pathname("goodcheck.yml")], reporter: reporter, stderr: stderr).tap do |check|
+        Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname("."), Pathname("goodcheck.yml")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home").tap do |check|
           assert_equal 0, check.run
 
           assert_match /README.md/, stdout.string
@@ -246,12 +246,12 @@ rules:
     pattern: foo
 EOF
 
-        Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr).tap do |check|
+        Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home").tap do |check|
           assert_equal 0, check.run
           refute_match /\.file/, stdout.string
         end
 
-        Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname("."), Pathname(".file")], reporter: reporter, stderr: stderr).tap do |check|
+        Check.new(config_path: builder.config_path, rules: [], targets: [Pathname("."), Pathname(".file")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home").tap do |check|
           assert_equal 0, check.run
           assert_match /\.file/, stdout.string
         end

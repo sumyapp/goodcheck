@@ -35,11 +35,21 @@ module Goodcheck
       1
     end
 
+    def home_path
+      if (path = ENV["GOODCHECK_HOME"])
+        Pathname(path)
+      else
+        Pathname(Dir.home) + ".goodcheck"
+      end
+    end
+
     def check(args)
       config_path = Pathname("goodcheck.yml")
       targets = []
       rules = []
       format = nil
+      loglevel = Logger::ERROR
+      force_download = false
 
       OptionParser.new("Usage: goodcheck check [options] dirs...") do |opts|
         opts.on("-c CONFIG", "--config=CONFIG") do |config|
@@ -51,7 +61,18 @@ module Goodcheck
         opts.on("--format=<text|json> [default: 'text']") do |f|
           format = f
         end
+        opts.on("-v", "--verbose") do
+          loglevel = Logger::INFO
+        end
+        opts.on("-d", "--debug") do
+          loglevel = Logger::DEBUG
+        end
+        opts.on("--force") do
+          force_download = true
+        end
       end.parse!(args)
+
+      Goodcheck.logger.level = loglevel
 
       if args.empty?
         targets << Pathname(".")
@@ -69,19 +90,43 @@ module Goodcheck
                    return 1
                  end
 
-      Commands::Check.new(reporter: reporter, config_path: config_path, rules: rules, targets: targets, stderr: stderr).run
+      Goodcheck.logger.info "Configuration = #{config_path}"
+      Goodcheck.logger.info "Rules = [#{rules.join(", ")}]"
+      Goodcheck.logger.info "Format = #{format}"
+      Goodcheck.logger.info "Targets = [#{targets.join(", ")}]"
+      Goodcheck.logger.info "Force download = #{force_download}"
+      Goodcheck.logger.info "Home path = #{home_path}"
+
+      Commands::Check.new(reporter: reporter, config_path: config_path, rules: rules, targets: targets, stderr: stderr, force_download: force_download, home_path: home_path).run
     end
 
     def test(args)
       config_path = Pathname("goodcheck.yml")
+      loglevel = Logger::ERROR
+      force_download = false
 
       OptionParser.new("Usage: goodcheck test [options]") do |opts|
         opts.on("-c CONFIG", "--config=CONFIG") do |config|
           config_path = Pathname(config)
         end
+        opts.on("-v", "--verbose") do
+          loglevel = Logger::INFO
+        end
+        opts.on("-d", "--debug") do
+          loglevel = Logger::DEBUG
+        end
+        opts.on("--force") do
+          force_download = true
+        end
       end.parse!(args)
 
-      Commands::Test.new(stdout: stdout, stderr: stderr, config_path: config_path).run
+      Goodcheck.logger.level = loglevel
+
+      Goodcheck.logger.info "Configuration = #{config_path}"
+      Goodcheck.logger.info "Force download = #{force_download}"
+      Goodcheck.logger.info "Home path = #{home_path}"
+
+      Commands::Test.new(stdout: stdout, stderr: stderr, config_path: config_path, force_download: force_download, home_path: home_path).run
     end
 
     def init(args)

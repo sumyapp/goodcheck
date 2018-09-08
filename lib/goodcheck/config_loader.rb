@@ -32,28 +32,65 @@ module Goodcheck
 
       let :rules, array(rule)
 
-      let :config, object(rules: rules)
+      let :import_target, string
+      let :imports, array(import_target)
+
+      let :config, object(rules: rules, import: optional(imports))
     end
 
     attr_reader :path
     attr_reader :content
     attr_reader :stderr
     attr_reader :printed_warnings
+    attr_reader :import_loader
 
-    def initialize(path:, content:, stderr:)
+    def initialize(path:, content:, stderr:, import_loader:)
       @path = path
       @content = content
       @stderr = stderr
       @printed_warnings = Set.new
+      @import_loader = import_loader
     end
 
     def load
-      Schema.config.coerce(content)
-      rules = content[:rules].map {|hash| load_rule(hash) }
-      Config.new(rules: rules)
+      Goodcheck.logger.info "Loading configuration: #{path}"
+      Goodcheck.logger.tagged "#{path}" do
+        Schema.config.coerce(content)
+
+        rules = []
+
+        load_rules(rules, content[:rules])
+
+        Array(content[:import]).each do |import|
+          load_import rules, import
+        end
+
+        Config.new(rules: rules)
+      end
+    end
+
+    def load_rules(rules, array)
+      array.each do |hash|
+        rules << load_rule(hash)
+      end
+    end
+
+    def load_import(rules, import)
+      Goodcheck.logger.info "Importing rules from #{import}"
+
+      Goodcheck.logger.tagged import do
+        import_loader.load(import) do |content|
+          json = JSON.parse(JSON.dump(YAML.load(content, import)), symbolize_names: true)
+
+          Schema.rules.coerce json
+          load_rules(rules, json)
+        end
+      end
     end
 
     def load_rule(hash)
+      Goodcheck.logger.debug "Loading rule: #{hash[:id]}"
+
       id = hash[:id]
       patterns = retrieve_patterns(hash)
       justifications = array(hash[:justification])
