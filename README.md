@@ -204,6 +204,14 @@ Available options are:
 * `--debug` to print all debug messages.
 * `--force` to ignore downloaded caches
 
+`goodcheck check` exits with:
+ 
+* `0` when it does not find any matching text fragment
+* `2` when it finds some matching text
+* `1` when it finds some error
+
+You can check its exit status to identify if the tool find some pattern or not.
+
 ### `goodcheck test [options]`
 
 The `test` command tests rules.

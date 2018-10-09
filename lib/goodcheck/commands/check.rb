@@ -23,18 +23,22 @@ module Goodcheck
       end
 
       def run
+        issue_reported = false
+
         reporter.analysis do
           load_config!(force_download: force_download, cache_path: cache_dir_path)
           each_check do |buffer, rule|
             reporter.rule(rule) do
               analyzer = Analyzer.new(rule: rule, buffer: buffer)
               analyzer.scan do |issue|
+                issue_reported = true
                 reporter.issue(issue)
               end
             end
           end
         end
-        0
+
+        issue_reported ? 2 : 0
       rescue Psych::Exception => exn
         stderr.puts "Unexpected error happens while loading YAML file: #{exn.inspect}"
         exn.backtrace.each do |trace_loc|
