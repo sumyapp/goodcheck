@@ -2,6 +2,8 @@
 
 ## master
 
+## 1.4.0 (2018-10-11)
+
 * Exit with `2` when it find matching text #27
 * Import rules from another location #26
 
