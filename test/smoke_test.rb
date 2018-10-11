@@ -106,7 +106,7 @@ EOF
 
       stdout, _, status = shell(goodcheck, "check", ".", chdir: builder.path)
 
-      assert status.success?
+      refute status.success?
       assert_match %r(app/models/user\.rb:2:  belongs_to :foo:\tFoo), stdout
     end
   end
@@ -136,7 +136,7 @@ EOF
 
       stdout, _, status = shell(goodcheck, "check", "--format=json", ".", chdir: builder.path)
 
-      assert status.success?
+      refute status.success?
       assert_equal [{
                       rule_id: "foo",
                       path: "app/models/user.rb",
@@ -177,7 +177,7 @@ EOF
 
       stdout, _, status = shell(goodcheck, "check", chdir: builder.path)
 
-      assert status.success?
+      refute status.success?
       assert_match %r(app/models/user\.rb:2:  belongs_to :foo:\tFoo), stdout
     end
   end
@@ -212,7 +212,7 @@ EOF
 
       stdout, _, status = shell(goodcheck, "check", "-R", "bar", chdir: builder.path)
 
-      assert status.success?
+      refute status.success?
       refute_match %r(app/models/user\.rb), stdout
       assert_match %r(app/views/welcome/index\.html\.erb), stdout
     end

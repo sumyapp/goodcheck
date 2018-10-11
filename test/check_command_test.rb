@@ -33,7 +33,7 @@ EOF
         reporter = Reporters::Text.new(stdout: stdout)
         check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
-        assert_equal 0, check.run
+        assert_equal 2, check.run
 
         refute_match %r(app/models/user\.rb:1:class User < ApplicationRecord), stdout.string
         assert_match %r(app/models/user\.rb:2:  belongs_to :foo:\tFoo), stdout.string
@@ -61,7 +61,7 @@ EOF
         reporter = Reporters::Text.new(stdout: stdout)
         check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
-        assert_equal 0, check.run
+        assert_equal 2, check.run
 
         assert_match %r(test\.yml:1:text: Github), stdout.string
         refute_match %r(link\.yml:1:text: Github), stdout.string
@@ -91,7 +91,7 @@ EOF
         reporter = Reporters::Text.new(stdout: stdout)
         check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
-        assert_equal 0, check.run
+        assert_equal 2, check.run
       end
     end
   end
@@ -135,6 +135,24 @@ EOF
     end
   end
 
+  def test_no_match
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: foo
+    message: Foo
+    pattern: foo
+EOF
+
+      builder.cd do
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
+
+        assert_equal 0, check.run
+      end
+    end
+  end
+
   def test_encoding
     TestCaseBuilder.tmpdir do |builder|
       builder.config content: <<EOF
@@ -160,7 +178,7 @@ EOF
         reporter = Reporters::Text.new(stdout: stdout)
         check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
-        assert_equal 0, check.run
+        assert_equal 2, check.run
 
         assert_match %r(euc-jp:1:吾輩は猫である。), stdout.string
         assert_match %r(utf-8:1:吾輩は猫である。), stdout.string
@@ -184,7 +202,7 @@ EOF
         reporter = Reporters::Text.new(stdout: stdout)
         check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
 
-        assert_equal 0, check.run
+        assert_equal 2, check.run
 
         assert_match %r(binary_file: #<ArgumentError: invalid byte sequence in UTF-8>), stderr.string
         assert_match %r(text_file:1:猫ねこ🐈:\tFoo), stdout.string
@@ -218,14 +236,14 @@ rules:
 EOF
 
         Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home").tap do |check|
-          assert_equal 0, check.run
+          assert_equal 2, check.run
 
           assert_match /README.md/, stdout.string
           refute_match /goodcheck.yml/, stdout.string
         end
 
         Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname("."), Pathname("goodcheck.yml")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home").tap do |check|
-          assert_equal 0, check.run
+          assert_equal 2, check.run
 
           assert_match /README.md/, stdout.string
           assert_match /goodcheck.yml/, stdout.string
@@ -247,12 +265,12 @@ rules:
 EOF
 
         Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home").tap do |check|
-          assert_equal 0, check.run
+          assert_equal 2, check.run
           refute_match /\.file/, stdout.string
         end
 
         Check.new(config_path: builder.config_path, rules: [], targets: [Pathname("."), Pathname(".file")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home").tap do |check|
-          assert_equal 0, check.run
+          assert_equal 2, check.run
           assert_match /\.file/, stdout.string
         end
       end
