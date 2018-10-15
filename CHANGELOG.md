@@ -2,6 +2,10 @@
 
 ## master
 
+## 1.4.1 (2018-10-15)
+
+* Update StrongJSON #28
+
 ## 1.4.0 (2018-10-11)
 
 * Exit with `2` when it find matching text #27
