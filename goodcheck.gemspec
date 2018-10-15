@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = "Regexp based customizable linter"
   spec.description   = "Regexp based customizable linter"
-  spec.homepage      = "https://github.com/sideci/goodcheck"
+  spec.homepage      = "https://github.com/sider/goodcheck"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
