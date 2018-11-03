@@ -6,11 +6,10 @@ rules:
   - id: com.example.1
     pattern: Github
     message: Do you want to write GitHub?
-    glob: 
+    glob:
       - "**/*.rb"
-      - "**/*.yaml"
-      - "**/*.yml"
-      - "**/*.html"
+      - "**/*.{yaml,yml}"
+      - "public/**/*.html"
     fail:
       - Signup via Github
     pass:
