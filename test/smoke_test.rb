@@ -62,6 +62,14 @@ class SmokeTest < Minitest::Test
     end
   end
 
+  def test_init_and_pass_test
+    TestCaseBuilder.tmpdir do |builder|
+      _, _, status = shell(goodcheck, "init", chdir: builder.path)
+      _, _, status = shell(goodcheck, "test", chdir: builder.path)
+      assert status.success?
+    end
+  end
+
   def test_test
     TestCaseBuilder.tmpdir do |builder|
       builder.config content: <<EOF
@@ -90,7 +98,7 @@ rules:
     pattern:
       - foo
       - bar
-    glob: 
+    glob:
       - "app/models/**/*.rb"
 EOF
 
@@ -120,7 +128,7 @@ rules:
     pattern:
       - foo
       - bar
-    glob: 
+    glob:
       - "app/models/**/*.rb"
 EOF
 
@@ -161,7 +169,7 @@ rules:
     pattern:
       - foo
       - bar
-    glob: 
+    glob:
       - "app/models/**/*.rb"
 EOF
 
@@ -190,7 +198,7 @@ rules:
     message: Foo
     pattern:
       - foo
-    glob: 
+    glob:
       - "app/models/**/*.rb"
   - id: bar
     message: Bar
