@@ -205,7 +205,7 @@ Available options are:
 * `--force` to ignore downloaded caches
 
 `goodcheck check` exits with:
- 
+
 * `0` when it does not find any matching text fragment
 * `2` when it finds some matching text
 * `1` when it finds some error
@@ -237,17 +237,16 @@ The *goodcheck home directory* is `~/.goodcheck`, but you can customize the loca
 
 The cache expires in 3 minutes.
 
-## Docker image
+## Docker Images
 
-You can use a docker image to use Goodcheck.
+You can use [Docker images](https://hub.docker.com/r/sider/goodcheck/) to use Goodcheck.
+For example:
 
 ```bash
-$ git clone https://github.com/sideci/goodcheck
-$ cd goodcheck
-$ docker build -t goodcheck:latest .
+$ docker pull sider/goodcheck
 
 $ cd /path/to/your/project
-$ docker run -it --rm -v "$(pwd):/work" goodcheck:latest goodcheck check
+$ docker run -it --rm -v "$(pwd):/work" sider/goodcheck goodcheck check
 ```
 
 ## Development
