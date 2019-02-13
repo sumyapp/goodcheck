@@ -1,3 +1,5 @@
+![Goodcheck logo](https://raw.githubusercontent.com/ivanha09/goodcheck/master/logo/GoodCheck%20Horizontal.png)
+
 # Goodcheck - Regexp based customizable linter
 
 Are you reviewing a pull request if the change contains deprecated API calls?
