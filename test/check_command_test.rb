@@ -15,7 +15,7 @@ rules:
     pattern:
       - foo
       - bar
-    glob: 
+    glob:
       - "app/models/**/*.rb"
 EOF
 
@@ -160,7 +160,7 @@ rules:
   - id: foo
     message: Foo
     pattern: 猫
-    glob: 
+    glob:
       - pattern: euc-jp
         encoding: EUC-JP
       - pattern: utf-8
@@ -272,6 +272,27 @@ EOF
         Check.new(config_path: builder.config_path, rules: [], targets: [Pathname("."), Pathname(".file")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home").tap do |check|
           assert_equal 2, check.run
           assert_match /\.file/, stdout.string
+        end
+      end
+    end
+  end
+
+  def test_pattern_end_of_line
+    TestCaseBuilder.tmpdir do |builder|
+      builder.cd do
+        reporter = Reporters::Text.new(stdout: stdout)
+        builder.file name: Pathname("abc.txt"), content: "foo\r\n"
+        builder.config content: <<EOF
+rules:
+  - id: foo
+    message: Foo
+    pattern:
+      regexp: "foo.*"
+EOF
+
+        Check.new(config_path: builder.config_path, rules: [], targets: [Pathname("abc.txt")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home").tap do |check|
+          assert_equal 2, check.run
+          assert_equal "abc.txt:1:foo:\tFoo\n", stdout.string
         end
       end
     end
