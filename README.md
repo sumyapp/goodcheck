@@ -176,6 +176,19 @@ Value of `import` can be an array of:
 
 The rules file is a YAML file with array of rules.
 
+## Excluding files
+
+`goodcheck.yml` can have optional `exclude` attribute.
+
+```yaml
+rules: []
+exclude:
+  - node_modules
+  - vendor
+```
+
+Value of `exclude` can be a string or an array of strings representing the glob pattern for excluded files.
+
 ## Commands
 
 ### `goodcheck init [options]`

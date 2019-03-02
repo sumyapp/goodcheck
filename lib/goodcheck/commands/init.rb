@@ -14,6 +14,10 @@ rules:
       - Signup via Github
     pass:
       - Signup via GitHub
+
+exclude:
+  - node_modules
+  - vendor
       EOC
 
       attr_reader :stdout
