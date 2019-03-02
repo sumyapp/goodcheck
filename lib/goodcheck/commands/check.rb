@@ -97,19 +97,27 @@ module Goodcheck
         when path.symlink?
           # noop
         when path.directory?
-          if !is_dotfile?(path) || is_dotfile?(path) && immediate
+          if immediate || (!is_dotfile?(path) && !excluded?(path))
             path.children.each do |child|
               each_file(child, &block)
             end
           end
         when path.file?
-          if path == config_path || is_dotfile?(path)
+          case
+          when path == config_path || is_dotfile?(path)
             # Skip dotfiles/config file unless explicitly given by command line
+            yield path if immediate
+          when excluded?(path)
+            # Skip excluded files unless explicitly given by command line
             yield path if immediate
           else
             yield path
           end
         end
+      end
+
+      def excluded?(path)
+        config.exclude_paths.any? {|pattern| path.fnmatch?(pattern, File::FNM_PATHNAME | File::FNM_EXTGLOB) }
       end
     end
   end
