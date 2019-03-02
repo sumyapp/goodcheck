@@ -42,6 +42,44 @@ EOF
     end
   end
 
+  def test_check2
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: foo
+    message: Foo
+    pattern:
+      regexp: .+
+      multiline: true
+    glob:
+      - "app/models/**/*.rb"
+EOF
+
+      builder.file name: Pathname("app/models/user.rb"), content: <<EOF
+class User < ApplicationRecord
+  belongs_to :foo
+end
+EOF
+
+      builder.cd do
+        reporter = Reporters::JSON.new(stdout: stdout, stderr: stderr)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
+
+        assert_equal 2, check.run
+
+        assert_equal [
+                       {
+                         rule_id: "foo",
+                         path: "app/models/user.rb",
+                         location: { start_line: 1, start_column: 0, end_line: 4, end_column: 0 },
+                         message: "Foo",
+                         justifications: []
+                       }
+                     ], JSON.parse(stdout.string, symbolize_names: true)
+      end
+    end
+  end
+
   def test_symlink_check
     TestCaseBuilder.tmpdir do |builder|
       builder.config content: <<EOF
