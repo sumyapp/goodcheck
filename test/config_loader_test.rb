@@ -168,6 +168,34 @@ class ConfigLoaderTest < Minitest::Test
     end
   end
 
+  def test_load_exclude
+    loader = ConfigLoader.new(
+      path: Pathname("hello.yml"),
+      content: {
+        rules: [],
+        exclude: ["**/node_modules"]
+      },
+      stderr: stderr,
+      import_loader: import_loader
+    )
+    config = loader.load
+    assert_equal ["**/node_modules"], config.exclude_paths
+  end
+
+  def test_load_exclude_string
+    loader = ConfigLoader.new(
+      path: Pathname("hello.yml"),
+      content: {
+        rules: [],
+        exclude: "**/node_modules"
+      },
+      stderr: stderr,
+      import_loader: import_loader
+    )
+    config = loader.load
+    assert_equal ["**/node_modules"], config.exclude_paths
+  end
+
   def test_load_config_failure2
     loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "a string", stderr: stderr, import_loader: import_loader)
 

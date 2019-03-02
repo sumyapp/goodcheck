@@ -34,8 +34,13 @@ module Goodcheck
 
       let :import_target, string
       let :imports, array(import_target)
+      let :exclude, enum(array(string), string)
 
-      let :config, object(rules: rules, import: optional(imports))
+      let :config, object(
+        rules: rules,
+        import: optional(imports),
+        exclude: optional(exclude)
+      )
     end
 
     attr_reader :path
@@ -65,7 +70,9 @@ module Goodcheck
           load_import rules, import
         end
 
-        Config.new(rules: rules)
+        exclude_paths = Array(content[:exclude])
+
+        Config.new(rules: rules, exclude_paths: exclude_paths)
       end
     end
 
