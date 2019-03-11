@@ -335,4 +335,80 @@ EOF
       end
     end
   end
+
+  def test_check_excluded
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: require
+    message: Require
+    pattern: require
+    glob:
+      - "**/*.js"
+
+exclude:
+  - node_modules
+EOF
+
+      builder.file name: Pathname("hello.js"), content: <<EOF
+const a = require("node")
+EOF
+
+      builder.file name: Pathname("node_modules/bar.js"), content: <<EOF
+const a = require("node")
+EOF
+
+      builder.cd do
+        reporter = Reporters::JSON.new(stdout: stdout, stderr: stderr)
+        check = Check.new(
+          config_path: builder.config_path,
+          rules: [],
+          targets: [Pathname(".")],
+          reporter: reporter,
+          stderr: stderr,
+          force_download: false,
+          home_path: builder.path + "home"
+        )
+
+        assert_equal 2, check.run
+
+        assert_equal [
+                       {
+                         rule_id: "require",
+                         path: "hello.js",
+                         location: { start_line: 1, start_column: 10, end_line: 1, end_column: 17 },
+                         message: "Require",
+                         justifications: []
+                       }
+                     ], JSON.parse(stdout.string, symbolize_names: true)
+      end
+
+      @stdout = nil
+
+      builder.cd do
+        reporter = Reporters::JSON.new(stdout: stdout, stderr: stderr)
+        check = Check.new(
+          config_path: builder.config_path,
+          rules: [],
+          targets: [Pathname("node_modules")],
+          reporter: reporter,
+          stderr: stderr,
+          force_download: false,
+          home_path: builder.path + "home"
+        )
+
+        assert_equal 2, check.run
+
+        assert_equal [
+                       {
+                         rule_id: "require",
+                         path: "node_modules/bar.js",
+                         location: { start_line: 1, start_column: 10, end_line: 1, end_column: 17 },
+                         message: "Require",
+                         justifications: []
+                       }
+                     ], JSON.parse(stdout.string, symbolize_names: true)
+      end
+    end
+  end
 end

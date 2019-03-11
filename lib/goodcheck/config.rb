@@ -1,9 +1,11 @@
 module Goodcheck
   class Config
     attr_reader :rules
+    attr_reader :exclude_paths
 
-    def initialize(rules:)
+    def initialize(rules:, exclude_paths:)
       @rules = rules
+      @exclude_paths = exclude_paths
     end
 
     def rules_for_path(path, rules_filter:, &block)
