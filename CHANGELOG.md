@@ -2,6 +2,10 @@
 
 ## master
 
+## 1.5.0 (2019-03-18)
+
+* Add `exclude` option #43
+
 ## 1.4.1 (2018-10-15)
 
 * Update StrongJSON #28
