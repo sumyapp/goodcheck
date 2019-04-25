@@ -15,24 +15,16 @@ module Goodcheck
         rule.patterns.each do |pattern|
           scanner = StringScanner.new(buffer.content)
 
-          break_head = pattern.regexp.source.start_with?("\\b")
-          after_break = true
-
-          until scanner.eos?
+          while true
             case
-            when scanner.scan(pattern.regexp)
-              next if break_head && !after_break
-
+            when scanner.scan_until(pattern.regexp)
               text = scanner.matched
               range = (scanner.pos - text.bytesize) .. scanner.pos
               unless issues.any? {|issue| issue.range == range }
                 issues << Issue.new(buffer: buffer, range: range, rule: rule, text: text)
               end
-            when scanner.scan(/.\b/m)
-              after_break = true
             else
-              scanner.scan(/./m)
-              after_break = false
+              break
             end
           end
         end

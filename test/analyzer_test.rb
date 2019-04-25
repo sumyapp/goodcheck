@@ -20,6 +20,10 @@ NSArray *a = [ NSMutableArray
     EOF
   end
 
+  def with_buffer(content)
+    yield Buffer.new(path: Pathname("foo.txt"), content: content)
+  end
+
   def new_rule(id, *patterns)
     Rule.new(id: id, patterns: patterns, message: "hello", justifications: [], globs: [], passes: [], fails: [])
   end
@@ -74,5 +78,18 @@ NSArray *a = [ NSMutableArray
 
     issues = analyzer.scan.to_a
     assert_empty issues
+  end
+
+  def test_analyzer_token_word_brake2
+    with_buffer(<<-CONTENT) do |buffer|
+test1
+test
+atest
+      CONTENT
+      analyzer = Analyzer.new(buffer: buffer,
+                              rule: new_rule("rule1", Pattern.regexp('(\btest\b|foo)', case_sensitive: false, multiline: false)))
+
+      assert_equal 1, analyzer.scan.count
+    end
   end
 end
