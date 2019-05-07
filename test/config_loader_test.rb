@@ -103,7 +103,7 @@ class ConfigLoaderTest < Minitest::Test
     assert_instance_of Rule, rule
     assert_equal "com.id.1", rule.id
     assert_equal "Some message", rule.message
-    assert_equal ["foo\\.bar"], rule.patterns.map(&:source)
+    assert_equal ["foo.bar"], rule.patterns.map(&:source)
     assert_equal [], rule.justifications
     assert_equal [], rule.globs
     assert_equal [], rule.passes
@@ -133,7 +133,7 @@ class ConfigLoaderTest < Minitest::Test
     assert_instance_of Rule, rule
     assert_equal "com.id.1", rule.id
     assert_equal "Some message", rule.message
-    assert_equal [/foo\.bar/, /foo\.bar\.baz|foo/i], rule.patterns.map(&:regexp)
+    assert_equal [/foo\.bar/, /foo\.bar\.baz/i, /foo/i], rule.patterns.map(&:regexp)
     assert_equal [], rule.justifications
     assert_equal [], rule.globs
     assert_equal [], rule.passes
