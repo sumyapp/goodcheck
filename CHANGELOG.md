@@ -2,6 +2,11 @@
 
 ## master
 
+## 1.5.1 (2019-05-08)
+
+* Regexp matching improvements
+* Performance improvements
+
 ## 1.5.0 (2019-03-18)
 
 * Add `exclude` option #43
