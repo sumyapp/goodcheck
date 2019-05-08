@@ -2,6 +2,10 @@
 
 ## master
 
+## 1.6.0 (2019-05-08)
+
+* Add `not` pattern rule [#49](https://github.com/sider/goodcheck/pull/49)
+
 ## 1.5.1 (2019-05-08)
 
 * Regexp matching improvements
