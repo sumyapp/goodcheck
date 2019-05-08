@@ -19,10 +19,11 @@ module Goodcheck
 
       let :encoding, enum(*Encoding.name_list.map {|name| literal(name) })
       let :glob, object(pattern: string, encoding: optional(encoding))
+      let :negated_pattern, object(not: pattern)
 
       let :rule, object(
         id: string,
-        pattern: enum(array(pattern), pattern),
+        pattern: enum(negated_pattern, array(pattern), pattern),
         message: string,
         justification: optional(enum(array(string), string)),
         glob: optional(enum(array(enum(glob, string)), glob, string)),
@@ -99,20 +100,25 @@ module Goodcheck
       Goodcheck.logger.debug "Loading rule: #{hash[:id]}"
 
       id = hash[:id]
-      patterns = retrieve_patterns(hash)
+      patterns, negated = retrieve_patterns(hash[:pattern])
       justifications = array(hash[:justification])
       globs = load_globs(array(hash[:glob]))
       message = hash[:message].chomp
       passes = array(hash[:pass])
       fails = array(hash[:fail])
 
-      Rule.new(id: id, patterns: patterns, justifications: justifications, globs: globs, message: message, passes: passes, fails: fails)
+      Rule.new(id: id, patterns: patterns, justifications: justifications, globs: globs, message: message, passes: passes, fails: fails, negated: negated)
     end
 
     def retrieve_patterns(hash)
-      array(hash[:pattern]).map do |pat|
-        load_pattern(pat)
+      if hash.is_a?(Hash) && hash.key?(:not)
+        negated = true
+        hash = hash[:not]
+      else
+        negated = false
       end
+
+      [array(hash).map {|pat| load_pattern(pat) }, negated]
     end
 
     def load_globs(globs)

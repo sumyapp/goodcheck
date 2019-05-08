@@ -25,7 +25,7 @@ NSArray *a = [ NSMutableArray
   end
 
   def new_rule(id, *patterns)
-    Rule.new(id: id, patterns: patterns, message: "hello", justifications: [], globs: [], passes: [], fails: [])
+    Rule.new(id: id, patterns: patterns, message: "hello", justifications: [], globs: [], passes: [], fails: [], negated: false)
   end
 
   def test_analyzer
