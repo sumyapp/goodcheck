@@ -168,8 +168,8 @@ class ConfigLoaderTest < Minitest::Test
       {
         id: "com.id.1",
         message: "Some message",
-        pattern: {
-          not: "foo.bar"
+        not: {
+          pattern: "foo.bar"
         }
       }
     )
@@ -243,13 +243,9 @@ class ConfigLoaderTest < Minitest::Test
                               stderr: stderr,
                               import_loader: import_loader)
 
-    exn = nil
-    begin
+    assert_raises StrongJSON::Type::Error do
       loader.load
-    rescue => exn
     end
-
-    assert_equal [:rules, 0, :glob], exn.path
   end
 
   def test_load_config

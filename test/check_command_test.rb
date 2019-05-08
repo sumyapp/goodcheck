@@ -168,7 +168,7 @@ EOF
 
         assert_equal 1, check.run
 
-        assert_match /Invalid config at \[rules\]\[0\]\[pattern\]/, stderr.string
+        assert_match /Invalid config at \[rules\]\[0\]/, stderr.string
       end
     end
   end
