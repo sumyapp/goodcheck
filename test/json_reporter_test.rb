@@ -13,7 +13,7 @@ class JSONReporterTest < Minitest::Test
 
     json_analysis = reporter.analysis do
       reporter.file Pathname("foo.txt") do
-        rule = Rule.new(id: "id", patterns: [], message: "Message", justifications: ["reason1", "reason2"], globs: [], fails: [], passes: [])
+        rule = Rule.new(id: "id", patterns: [], message: "Message", justifications: ["reason1", "reason2"], globs: [], fails: [], passes: [], negated: false)
         reporter.rule rule do
           buffer = Buffer.new(path: Pathname("foo.txt"), content: "a\nb\nc\nd\ne")
           issue = Issue.new(buffer: buffer, range: 0...2, rule: rule, text: "a ")

@@ -17,13 +17,15 @@ module Goodcheck
     end
 
     def location
-      unless @location
-        start_line, start_column = buffer.location_for_position(range.begin)
-        end_line, end_column = buffer.location_for_position(range.end)
-        @location = Location.new(start_line: start_line, start_column: start_column, end_line: end_line, end_column: end_column)
-      end
+      if range
+        unless @location
+          start_line, start_column = buffer.location_for_position(range.begin)
+          end_line, end_column = buffer.location_for_position(range.end)
+          @location = Location.new(start_line: start_line, start_column: start_column, end_line: end_line, end_column: end_column)
+        end
 
-      @location
+        @location
+      end
     end
   end
 end

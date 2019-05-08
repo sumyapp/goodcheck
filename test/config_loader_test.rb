@@ -108,6 +108,7 @@ class ConfigLoaderTest < Minitest::Test
     assert_equal [], rule.globs
     assert_equal [], rule.passes
     assert_equal [], rule.fails
+    refute_operator rule, :negated?
   end
 
   def test_load_rule_case
@@ -159,6 +160,29 @@ class ConfigLoaderTest < Minitest::Test
 
     assert_match /`case_insensitive` option is deprecated/, stderr.string
     assert_equal 1, stderr.string.scan(/`case_insensitive` option is deprecated/).count
+  end
+
+  def test_load_rule_negated
+    loader = config_loader()
+    rule = loader.load_rule(
+      {
+        id: "com.id.1",
+        message: "Some message",
+        not: {
+          pattern: "foo.bar"
+        }
+      }
+    )
+
+    assert_instance_of Rule, rule
+    assert_equal "com.id.1", rule.id
+    assert_equal "Some message", rule.message
+    assert_equal ["foo.bar"], rule.patterns.map(&:source)
+    assert_equal [], rule.justifications
+    assert_equal [], rule.globs
+    assert_equal [], rule.passes
+    assert_equal [], rule.fails
+    assert_operator rule, :negated?
   end
 
   def test_load_config_failure
@@ -219,13 +243,9 @@ class ConfigLoaderTest < Minitest::Test
                               stderr: stderr,
                               import_loader: import_loader)
 
-    exn = nil
-    begin
+    assert_raises StrongJSON::Type::Error do
       loader.load
-    rescue => exn
     end
-
-    assert_equal [:rules, 0, :glob], exn.path
   end
 
   def test_load_config
