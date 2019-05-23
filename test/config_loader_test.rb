@@ -326,4 +326,50 @@ EOF
       assert config.rules.any? {|rule| rule.id == "imported_rule" }
     end
   end
+
+  def test_pattern_globs
+    mktmpdir do |path|
+      config_path = path + "goodcheck.yml"
+
+      loader = ConfigLoader.new(
+        path: config_path,
+        content: {
+          rules: [
+            {
+              id: "1",
+              message: "foo",
+              pattern: {
+                literal: "foo",
+                glob: "foo.rb"
+              }
+            },
+            {
+              id: "2",
+              message: "foo",
+              pattern: {
+                literal: "bar",
+                glob: [
+                  "**/*.ts"
+                ]
+              }
+            }
+          ],
+        },
+        stderr: stderr,
+        import_loader: import_loader
+      )
+
+      config = loader.load
+
+      config.rules.find {|rule| rule.id == "1" }.tap do |rule|
+        assert_equal [], rule.globs
+        assert_equal ["foo.rb"], rule.patterns[0].globs.map(&:pattern)
+      end
+
+      config.rules.find {|rule| rule.id == "2" }.tap do |rule|
+        assert_equal [], rule.globs
+        assert_equal ["**/*.ts"], rule.patterns[0].globs.map(&:pattern)
+      end
+    end
+  end
 end

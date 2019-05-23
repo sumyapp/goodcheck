@@ -2,26 +2,40 @@ module Goodcheck
   class Pattern
     attr_reader :source
     attr_reader :regexp
+    attr_reader :globs
 
-    def initialize(source:, regexp:)
+    def initialize(source:, regexp:, globs:)
       @source = source
       @regexp = regexp
+      @globs = globs
     end
 
-    def self.literal(literal, case_sensitive:)
-      new(source: literal, regexp: Regexp.compile(Regexp.escape(literal), !case_sensitive))
+    def self.literal(literal, case_sensitive:, globs: [])
+      new(
+        source: literal,
+        regexp: Regexp.compile(Regexp.escape(literal), !case_sensitive),
+        globs: globs
+      )
     end
 
-    def self.regexp(regexp, case_sensitive:, multiline:)
+    def self.regexp(regexp, case_sensitive:, multiline:, globs: [])
       options = 0
       options |= Regexp::IGNORECASE unless case_sensitive
       options |= Regexp::MULTILINE if multiline
 
-      new(source: regexp, regexp: Regexp.compile(regexp, options))
+      new(
+        source: regexp,
+        regexp: Regexp.compile(regexp, options),
+        globs: globs
+      )
     end
 
-    def self.token(tokens, case_sensitive:)
-      new(source: tokens, regexp: compile_tokens(tokens, case_sensitive: case_sensitive))
+    def self.token(tokens, case_sensitive:, globs: [])
+      new(
+        source: tokens,
+        regexp: compile_tokens(tokens, case_sensitive: case_sensitive),
+        globs: globs
+      )
     end
 
     def self.compile_tokens(source, case_sensitive:)

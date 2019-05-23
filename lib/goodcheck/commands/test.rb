@@ -93,6 +93,7 @@ module Goodcheck
       def rule_matches_example?(rule, example)
         buffer = Buffer.new(path: Pathname("-"), content: example)
         analyzer = Analyzer.new(rule: rule, buffer: buffer)
+        analyzer.use_all_patterns!
         analyzer.scan.count > 0
       end
     end
