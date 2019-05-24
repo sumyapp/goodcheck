@@ -84,11 +84,13 @@ id: com.sample.GitHub
 pattern:
   literal: Github
   case_sensitive: true
+  glob: []
 message: Write GitHub, not Github
 ```
 
 All regexp meta characters included in the `literal` value will be escaped.
 `case_sensitive` is an optional key and the default is `true`.
+`glob` is an optional key and the default is empty.
 
 #### *regexp pattern*
 
@@ -100,12 +102,13 @@ pattern:
   regexp: \d{4,}
   case_sensitive: false
   multiline: false
+  glob: []
 message: Insert delimiters when writing large numbers
 justification:
   - When you are not writing numbers, including phone numbers, zip code, ...
 ```
 
-It accepts two optional attributes, `case_sensitive` and `multiline`.
+It accepts two optional attributes, `case_sensitive`, `multiline`, and `glob`.
 The default values of `case_sensitive` and `multiline` are `true` and `false` respectively.
 
 The regexp will be passed to `Regexp.compile`.
@@ -120,6 +123,7 @@ id: com.sample.no-blink
 pattern:
   token: "<blink"
   case_sensitive: false
+  glob: []
 message: Stop using <blink> tag
 glob: "**/*.html"
 justification:
@@ -133,7 +137,7 @@ In that case, try using *regexp pattern*.
 The generated regexp of `<blink` is `<\s*blink\b/m`.
 It matches with `<blink />` and `< BLINK>`, but does not match with `https://www.chromium.org/blink`.
 
-It accepts one optional attribute, `case_sensitive`.
+It accepts one optional attributes, `case_sensitive` and `glob`.
 The default value of `case_sensitive` is `true`.
 Note that the generated regexp is in multiline mode.
 
@@ -155,6 +159,18 @@ The default value is `UTF-8`.
 If you write a string as a `glob`, the string value can be the `pattern` of the glob, without `encoding` attribute.
 
 If you omit `glob` attribute in a rule, the rule will be applied to all files given to `goodcheck`.
+
+If both of your rule and its pattern has `glob`, Goodcheck will scan the pattern from the `glob` files in the pattern.
+
+```yaml
+rules:
+  - id: glob_test
+    pattern:
+      - literal: 123      # This pattern applies to .css files
+        glob: "*.css"
+      - literal: abc      # This pattern applies to .txt files
+    glob: "*.txt"
+```
 
 ## Importing rules
 
