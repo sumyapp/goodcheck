@@ -8,9 +8,30 @@ module Goodcheck
       @buffer = buffer
     end
 
+    def use_all_patterns!
+      @use_all_patterns = true
+    end
+
+    def patterns
+      if @use_all_patterns
+        rule.patterns
+      else
+        rule.patterns.select do |pattern|
+          case
+          when pattern.globs.empty? && rule.globs.empty?
+            true
+          when pattern.globs.empty?
+            rule.globs.any? {|glob| glob.test(buffer.path) }
+          else
+            pattern.globs.any? {|glob| glob.test(buffer.path) }
+          end
+        end
+      end
+    end
+
     def scan(&block)
       if block_given?
-        regexp = Regexp.union(*rule.patterns.map(&:regexp))
+        regexp = Regexp.union(*patterns.map(&:regexp))
 
         unless rule.negated?
           issues = []

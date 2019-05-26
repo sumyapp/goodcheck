@@ -80,6 +80,45 @@ EOF
     end
   end
 
+  def test_check_pattern_glob
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: foo
+    message: Foo
+    pattern:
+      - regexp: hello
+        multiline: true
+        glob: "*.css"
+      - literal: font
+        glob: "*.rb"
+    glob:
+      - "*"
+EOF
+
+      builder.file name: Pathname("user.rb"), content: <<-EOF
+puts "hello world"
+puts "font-size"
+      EOF
+      builder.file name: Pathname("user.css"), content: <<-EOF
+.hello {
+  font-size: 123px;
+}
+      EOF
+
+      builder.cd do
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
+
+        assert_equal 2, check.run
+
+        # Matches pattern glob
+        assert_includes stdout.string.lines, "user.css:1:.hello {:\tFoo\n"
+        assert_includes stdout.string.lines, "user.rb:2:puts \"font-size\":\tFoo\n"
+      end
+    end
+  end
+
   def test_symlink_check
     TestCaseBuilder.tmpdir do |builder|
       builder.config content: <<EOF

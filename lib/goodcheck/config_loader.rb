@@ -9,23 +9,24 @@ module Goodcheck
       let :deprecated_literal_pattern, object(literal: string, case_insensitive: boolean?)
       let :deprecated_token_pattern, object(token: string, case_insensitive: boolean?)
 
-      let :regexp_pattern, object(regexp: string, case_sensitive: boolean?, multiline: boolean?)
-      let :literal_pattern, object(literal: string, case_sensitive: boolean?)
-      let :token_pattern, object(token: string, case_sensitive: boolean?)
+      let :encoding, enum(*Encoding.name_list.map {|name| literal(name) })
+      let :glob_obj, object(pattern: string, encoding: optional(encoding))
+      let :glob, enum(array(enum(glob_obj, string)), glob_obj, string)
+
+      let :regexp_pattern, object(regexp: string, case_sensitive: boolean?, multiline: boolean?, glob: optional(glob))
+      let :literal_pattern, object(literal: string, case_sensitive: boolean?, glob: optional(glob))
+      let :token_pattern, object(token: string, case_sensitive: boolean?, glob: optional(glob))
 
       let :pattern, enum(regexp_pattern, literal_pattern, token_pattern,
                          deprecated_regexp_pattern, deprecated_literal_pattern, deprecated_token_pattern,
                          string)
-
-      let :encoding, enum(*Encoding.name_list.map {|name| literal(name) })
-      let :glob, object(pattern: string, encoding: optional(encoding))
 
       let :positive_rule, object(
         id: string,
         pattern: enum(array(pattern), pattern),
         message: string,
         justification: optional(enum(array(string), string)),
-        glob: optional(enum(array(enum(glob, string)), glob, string)),
+        glob: optional(glob),
         pass: optional(enum(array(string), string)),
         fail: optional(enum(array(string), string))
       )
@@ -35,7 +36,7 @@ module Goodcheck
         not: object(pattern: enum(array(pattern), pattern)),
         message: string,
         justification: optional(enum(array(string), string)),
-        glob: optional(enum(array(enum(glob, string)), glob, string)),
+        glob: optional(glob),
         pass: optional(enum(array(string), string)),
         fail: optional(enum(array(string), string))
       )
@@ -148,20 +149,21 @@ module Goodcheck
       when String
         Pattern.literal(pattern, case_sensitive: true)
       when Hash
+        globs = load_globs(array(pattern[:glob]))
         case
         when pattern[:literal]
           cs = case_sensitive?(pattern)
           literal = pattern[:literal]
-          Pattern.literal(literal, case_sensitive: cs)
+          Pattern.literal(literal, case_sensitive: cs, globs: globs)
         when pattern[:regexp]
           regexp = pattern[:regexp]
           cs = case_sensitive?(pattern)
           multiline = pattern[:multiline]
-          Pattern.regexp(regexp, case_sensitive: cs, multiline: multiline)
+          Pattern.regexp(regexp, case_sensitive: cs, multiline: multiline, globs: globs)
         when pattern[:token]
           tok = pattern[:token]
           cs = case_sensitive?(pattern)
-          Pattern.token(tok, case_sensitive: cs)
+          Pattern.token(tok, case_sensitive: cs, globs: globs)
         end
       end
     end
