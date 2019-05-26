@@ -5,49 +5,107 @@ module Goodcheck
     class InvalidPattern < StandardError; end
 
     Schema = StrongJSON.new do
+      def self.array_or(type)
+        a = array(type)
+        enum(a, type, detector: -> (value) {
+          case value
+          when Array
+            a
+          else
+            type
+          end
+        })
+      end
+
       let :deprecated_regexp_pattern, object(regexp: string, case_insensitive: boolean?, multiline: boolean?)
       let :deprecated_literal_pattern, object(literal: string, case_insensitive: boolean?)
       let :deprecated_token_pattern, object(token: string, case_insensitive: boolean?)
 
       let :encoding, enum(*Encoding.name_list.map {|name| literal(name) })
       let :glob_obj, object(pattern: string, encoding: optional(encoding))
-      let :glob, enum(array(enum(glob_obj, string)), glob_obj, string)
+      let :one_glob, enum(glob_obj,
+                          string,
+                          detector: -> (value) {
+                            case value
+                            when Hash
+                              glob_obj
+                            when String
+                              string
+                            end
+                          })
+      let :glob, array_or(one_glob)
 
       let :regexp_pattern, object(regexp: string, case_sensitive: boolean?, multiline: boolean?, glob: optional(glob))
       let :literal_pattern, object(literal: string, case_sensitive: boolean?, glob: optional(glob))
       let :token_pattern, object(token: string, case_sensitive: boolean?, glob: optional(glob))
 
-      let :pattern, enum(regexp_pattern, literal_pattern, token_pattern,
-                         deprecated_regexp_pattern, deprecated_literal_pattern, deprecated_token_pattern,
-                         string)
+      let :pattern, enum(regexp_pattern,
+                         literal_pattern,
+                         token_pattern,
+                         deprecated_regexp_pattern,
+                         deprecated_literal_pattern,
+                         deprecated_token_pattern,
+                         string,
+                         detector: -> (value) {
+                           case value
+                           when Hash
+                             case
+                             when value.key?(:regexp) && value.key?(:case_insensitive)
+                               deprecated_regexp_pattern
+                             when value.key?(:regexp)
+                               regexp_pattern
+                             when value.key?(:literal) && value.key?(:case_insensitive)
+                               deprecated_literal_pattern
+                             when value.key?(:literal)
+                               literal_pattern
+                             when value.key?(:token) && value.key?(:case_insensitive)
+                               deprecated_token_pattern
+                             when value.key?(:token)
+                               token_pattern
+                             end
+                           when String
+                             string
+                           end
+                         })
 
       let :positive_rule, object(
         id: string,
-        pattern: enum(array(pattern), pattern),
+        pattern: array_or(pattern),
         message: string,
-        justification: optional(enum(array(string), string)),
+        justification: optional(array_or(string)),
         glob: optional(glob),
-        pass: optional(enum(array(string), string)),
-        fail: optional(enum(array(string), string))
+        pass: optional(array_or(string)),
+        fail: optional(array_or(string))
       )
 
       let :negative_rule, object(
         id: string,
-        not: object(pattern: enum(array(pattern), pattern)),
+        not: object(pattern: array_or(pattern)),
         message: string,
-        justification: optional(enum(array(string), string)),
+        justification: optional(array_or(string)),
         glob: optional(glob),
-        pass: optional(enum(array(string), string)),
-        fail: optional(enum(array(string), string))
+        pass: optional(array_or(string)),
+        fail: optional(array_or(string))
       )
 
-      let :rule, enum(positive_rule, negative_rule)
+      let :rule, enum(positive_rule,
+                      negative_rule,
+                      detector: -> (hash) {
+                        if hash.is_a?(Hash)
+                          case
+                          when hash[:pattern]
+                            positive_rule
+                          when hash[:not]
+                            negative_rule
+                          end
+                        end
+                      })
 
       let :rules, array(rule)
 
       let :import_target, string
       let :imports, array(import_target)
-      let :exclude, enum(array(string), string)
+      let :exclude, array_or(string)
 
       let :config, object(
         rules: rules,

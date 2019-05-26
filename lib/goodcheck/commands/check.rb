@@ -45,8 +45,10 @@ module Goodcheck
           stderr.puts "  #{trace_loc}"
         end
         1
-      rescue StrongJSON::Type::Error => exn
-        stderr.puts "Invalid config at #{exn.path.map {|x| "[#{x}]" }.join}"
+      rescue StrongJSON::Type::TypeError, StrongJSON::Type::UnexpectedAttributeError => exn
+        stderr.puts "Invalid config: #{exn.message}"
+        stderr.puts StrongJSON::ErrorReporter.new(path: exn.path).to_s
+
         1
       rescue Errno::ENOENT => exn
         stderr.puts "#{exn}"
