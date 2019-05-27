@@ -123,6 +123,33 @@ user.rb:2:puts "font-size":\tFoo
     end
   end
 
+  def test_check_no_pattern
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: foo
+    message: Foo
+    glob: "package.json"
+EOF
+
+      builder.file name: Pathname("Gemfile"), content: <<-EOF
+source "https://rubygems.org"
+      EOF
+      builder.file name: Pathname("package.json"), content: <<-EOF
+{}
+      EOF
+
+      builder.cd do
+
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
+
+        assert_equal 2, check.run
+        assert_equal "package.json:-:{}:\tFoo\n", stdout.string
+      end
+    end
+  end
+
   def test_symlink_check
     TestCaseBuilder.tmpdir do |builder|
       builder.config content: <<EOF
@@ -218,7 +245,7 @@ Invalid config: TypeError at $.rules[0]: expected=rule, value={:id=>"foo", :mess
    $ expected to be config
 
 Where:
-  rule = enum(positive_rule, negative_rule)
+  rule = enum(positive_rule, negative_rule, nopattern_rule)
   rules = array(rule)
   config = {
     "rules": rules,
