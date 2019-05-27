@@ -187,7 +187,7 @@ class ConfigLoaderTest < Minitest::Test
 
   def test_load_config_failure
     loader = ConfigLoader.new(path: Pathname("hello.yml"), content: [{}], stderr: stderr, import_loader: import_loader)
-    assert_raises StrongJSON::Type::Error do
+    assert_raises StrongJSON::Type::TypeError do
       loader.load
     end
   end
@@ -223,7 +223,7 @@ class ConfigLoaderTest < Minitest::Test
   def test_load_config_failure2
     loader = ConfigLoader.new(path: Pathname("hello.yml"), content: "a string", stderr: stderr, import_loader: import_loader)
 
-    assert_raises StrongJSON::Type::Error do
+    assert_raises StrongJSON::Type::TypeError do
       loader.load
     end
   end
@@ -243,7 +243,7 @@ class ConfigLoaderTest < Minitest::Test
                               stderr: stderr,
                               import_loader: import_loader)
 
-    assert_raises StrongJSON::Type::Error do
+    assert_raises StrongJSON::Type::TypeError do
       loader.load
     end
   end

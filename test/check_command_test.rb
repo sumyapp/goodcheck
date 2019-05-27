@@ -207,7 +207,21 @@ EOF
 
         assert_equal 1, check.run
 
-        assert_match /Invalid config at \[rules\]\[0\]/, stderr.string
+        assert_equal <<MSG, stderr.string
+Invalid config: TypeError at $.rules[0]: expected=rule, value={:id=>"foo", :message=>"Foo"}
+ 0 expected to be rule
+  "rules" expected to be rules
+   $ expected to be config
+
+Where:
+  rule = enum(positive_rule, negative_rule)
+  rules = array(rule)
+  config = {
+    "rules": rules,
+    "import": optional(imports),
+    "exclude": optional(exclude)
+  }
+MSG
       end
     end
   end
