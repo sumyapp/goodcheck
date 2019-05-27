@@ -105,6 +105,9 @@ puts "font-size"
   font-size: 123px;
 }
       EOF
+      builder.file name: Pathname("user.html"), content: <<-EOF
+<h1 style="font-size: 12px">hello world<h1>
+      EOF
 
       builder.cd do
         reporter = Reporters::Text.new(stdout: stdout)
@@ -112,9 +115,10 @@ puts "font-size"
 
         assert_equal 2, check.run
 
-        # Matches pattern glob
-        assert_includes stdout.string.lines, "user.css:1:.hello {:\tFoo\n"
-        assert_includes stdout.string.lines, "user.rb:2:puts \"font-size\":\tFoo\n"
+        assert_equal <<-MSG, stdout.string
+user.css:1:.hello {:\tFoo
+user.rb:2:puts "font-size":\tFoo
+        MSG
       end
     end
   end
