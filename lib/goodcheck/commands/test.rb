@@ -19,12 +19,14 @@ module Goodcheck
       end
 
       def run
-        load_config!(cache_path: cache_dir_path, force_download: force_download)
+        handle_config_errors stderr do
+          load_config!(cache_path: cache_dir_path, force_download: force_download)
 
-        validate_rule_uniqueness or return 1
-        validate_rules or return 1
+          validate_rule_uniqueness or return 1
+          validate_rules or return 1
 
-        0
+          0
+        end
       end
 
       def validate_rule_uniqueness
