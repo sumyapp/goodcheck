@@ -2,6 +2,11 @@
 
 ## master
 
+## 1.7.0 (2019-05-28)
+
+* Support a rule without `pattern` [#52](https://github.com/sider/goodcheck/pull/52)
+* Let each `pattern` have `glob` [#50](https://github.com/sider/goodcheck/pull/50)
+
 ## 1.6.0 (2019-05-08)
 
 * Add `not` pattern rule [#49](https://github.com/sider/goodcheck/pull/49)
