@@ -63,7 +63,7 @@ rules:
 The *rule* hash contains the following keys.
 
 * `id`: a string to identify rules (required)
-* `pattern`: a *pattern* or a sequence of *pattern*s (required)
+* `pattern`: a *pattern* or a sequence of *pattern*s
 * `message`: a string to tell writers why the code piece should be revised (required)
 * `justification`: a sequence of strings to tell writers when a exception can be allowed (optional)
 * `glob`: a *glob* or a sequence of *glob*s (optional)
@@ -170,6 +170,42 @@ rules:
         glob: "*.css"
       - literal: abc      # This pattern applies to .txt files
     glob: "*.txt"
+```
+
+### A rule without _negated_ pattern
+
+Goodcheck rules are usually to detect _something is included in a file_.
+You can define the _negated_ rules for the opposite, _something is missing in a file_.
+
+```yaml
+rules:
+  - id: negated
+    not:
+      pattern:
+        <!DOCTYPE html>
+    message: Write a doctype on HTML files.
+    glob: "**/*.html"
+```
+
+### A rule without `pattern`
+
+You can define a rule without `pattern`.
+The rule emits a issue on each file specified with `glob`.
+You cannot omit `glob` from a rule definition without `pattern`.
+
+```yaml
+rules:
+  - id: without_pattern
+    message: |
+      Read the operation manual for DB migration: https://example.com/guides/123
+    glob: db/schema.rb
+```
+
+The output will be something like:
+
+```
+$ goodcheck check
+db/schema.rb:-:# This file is auto-generated from the current state of the database. Instead: Read the operation manual for DB migration: https://example.com/guides/123
 ```
 
 ## Importing rules
