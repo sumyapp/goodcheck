@@ -172,7 +172,7 @@ rules:
     glob: "*.txt"
 ```
 
-### A rule without _negated_ pattern
+### A rule with _negated_ pattern
 
 Goodcheck rules are usually to detect _something is included in a file_.
 You can define the _negated_ rules for the opposite, _something is missing in a file_.
