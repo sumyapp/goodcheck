@@ -88,8 +88,16 @@ module Goodcheck
         fail: optional(array_or(string))
       )
 
+      let :nopattern_rule, object(
+        id: string,
+        message: string,
+        justification: optional(array_or(string)),
+        glob: glob
+      )
+
       let :rule, enum(positive_rule,
                       negative_rule,
+                      nopattern_rule,
                       detector: -> (hash) {
                         if hash.is_a?(Hash)
                           case
@@ -97,6 +105,8 @@ module Goodcheck
                             positive_rule
                           when hash[:not]
                             negative_rule
+                          when hash.key?(:glob) && !hash.key?(:pattern) && !hash.key?(:not)
+                            nopattern_rule
                           end
                         end
                       })
@@ -188,7 +198,11 @@ module Goodcheck
         negated = false
       end
 
-      [array(hash[:pattern]).map {|pat| load_pattern(pat) }, negated]
+      if hash.key?(:pattern)
+        [array(hash[:pattern]).map {|pat| load_pattern(pat) }, negated]
+      else
+        [[], false]
+      end
     end
 
     def load_globs(globs)

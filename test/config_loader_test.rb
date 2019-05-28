@@ -372,4 +372,32 @@ EOF
       end
     end
   end
+
+  def test_no_pattern_rule
+    mktmpdir do |path|
+      config_path = path + "goodcheck.yml"
+
+      loader = ConfigLoader.new(
+        path: config_path,
+        content: {
+          rules: [
+            {
+              id: "1",
+              message: "foo",
+              glob: "db/schema.rb"
+            },
+          ],
+        },
+        stderr: stderr,
+        import_loader: import_loader
+      )
+
+      config = loader.load
+
+      config.rules.find {|rule| rule.id == "1" }.tap do |rule|
+        assert_equal ["db/schema.rb"], rule.globs.map(&:pattern)
+        assert_equal [], rule.patterns
+      end
+    end
+  end
 end

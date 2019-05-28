@@ -20,12 +20,12 @@ NSArray *a = [ NSMutableArray
     EOF
   end
 
-  def with_buffer(content)
-    yield Buffer.new(path: Pathname("foo.txt"), content: content)
+  def with_buffer(content, path: Pathname("foo.txt"))
+    yield Buffer.new(path: path, content: content)
   end
 
-  def new_rule(id, *patterns)
-    Rule.new(id: id, patterns: patterns, message: "hello", justifications: [], globs: [], passes: [], fails: [], negated: false)
+  def new_rule(id, *patterns, globs: [])
+    Rule.new(id: id, patterns: patterns, message: "hello", justifications: [], globs: globs, passes: [], fails: [], negated: false)
   end
 
   def test_analyzer
@@ -90,6 +90,24 @@ atest
                               rule: new_rule("rule1", Pattern.regexp('(\btest\b|foo)', case_sensitive: false, multiline: false)))
 
       assert_equal 1, analyzer.scan.count
+    end
+  end
+
+  def test_analyzer_empty_pattern
+    with_buffer(<<-CONTENT, path: Pathname("foo.txt")) do |buffer|
+test1
+test
+atest
+    CONTENT
+      analyzer = Analyzer.new(buffer: buffer,
+                              rule: new_rule("rule1",
+                                             globs: Goodcheck::Glob.new(pattern: "*.txt", encoding: nil)))
+
+      issues = analyzer.scan.to_a
+
+      assert_equal 1, issues.size
+      assert_nil issues[0].range
+      assert_nil issues[0].text
     end
   end
 end

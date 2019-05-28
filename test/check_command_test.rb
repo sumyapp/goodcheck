@@ -105,6 +105,9 @@ puts "font-size"
   font-size: 123px;
 }
       EOF
+      builder.file name: Pathname("user.html"), content: <<-EOF
+<h1 style="font-size: 12px">hello world<h1>
+      EOF
 
       builder.cd do
         reporter = Reporters::Text.new(stdout: stdout)
@@ -112,9 +115,37 @@ puts "font-size"
 
         assert_equal 2, check.run
 
-        # Matches pattern glob
-        assert_includes stdout.string.lines, "user.css:1:.hello {:\tFoo\n"
-        assert_includes stdout.string.lines, "user.rb:2:puts \"font-size\":\tFoo\n"
+        assert_equal <<-MSG, stdout.string
+user.css:1:.hello {:\tFoo
+user.rb:2:puts "font-size":\tFoo
+        MSG
+      end
+    end
+  end
+
+  def test_check_no_pattern
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: foo
+    message: Foo
+    glob: "package.json"
+EOF
+
+      builder.file name: Pathname("Gemfile"), content: <<-EOF
+source "https://rubygems.org"
+      EOF
+      builder.file name: Pathname("package.json"), content: <<-EOF
+{}
+      EOF
+
+      builder.cd do
+
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
+
+        assert_equal 2, check.run
+        assert_equal "package.json:-:{}:\tFoo\n", stdout.string
       end
     end
   end
@@ -214,7 +245,7 @@ Invalid config: TypeError at $.rules[0]: expected=rule, value={:id=>"foo", :mess
    $ expected to be config
 
 Where:
-  rule = enum(positive_rule, negative_rule)
+  rule = enum(positive_rule, negative_rule, nopattern_rule)
   rules = array(rule)
   config = {
     "rules": rules,
