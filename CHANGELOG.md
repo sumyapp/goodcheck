@@ -2,6 +2,11 @@
 
 ## master
 
+## 1.7.1 (2019-05-29)
+
+* Fix test command error handling
+* Update strong_json
+
 ## 1.7.0 (2019-05-28)
 
 * Support a rule without `pattern` [#52](https://github.com/sider/goodcheck/pull/52)
