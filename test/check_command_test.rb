@@ -252,6 +252,30 @@ Where:
     "import": optional(imports),
     "exclude": optional(exclude)
   }
+  positive_rule = {
+    "id": string,
+    "pattern": enum(array(pattern), pattern),
+    "message": string,
+    "justification": optional(enum(array(string), string)),
+    "glob": optional(glob),
+    "pass": optional(enum(array(string), string)),
+    "fail": optional(enum(array(string), string))
+  }
+  negative_rule = {
+    "id": string,
+    "not": { "pattern": enum(array(pattern), pattern) },
+    "message": string,
+    "justification": optional(enum(array(string), string)),
+    "glob": optional(glob),
+    "pass": optional(enum(array(string), string)),
+    "fail": optional(enum(array(string), string))
+  }
+  nopattern_rule = {
+    "id": string,
+    "message": string,
+    "justification": optional(enum(array(string), string)),
+    "glob": glob
+  }
 MSG
       end
     end
