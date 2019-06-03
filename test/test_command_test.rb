@@ -12,7 +12,7 @@ class TestCommandTest < Minitest::Test
     end
   end
 
-  def test_ok
+  def test_ok_pattern
     with_config(<<EOF) do |builder|
 rules:
   - id: sample.1
@@ -29,8 +29,55 @@ rules:
       - "[NSArray  new ]"
 EOF
       test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path, force_download: nil, home_path: builder.path + "home")
+      result = test.run
 
-      assert_equal 0, test.run
+      assert_equal 0, result
+
+      assert_equal <<MSG, stdout.string
+Validating rule id uniqueness...
+  OK!👍
+Testing rule sample.2...
+  Testing pattern...
+  OK!🎉
+MSG
+    end
+  end
+
+  def test_ok_trigger
+    with_config(<<EOF) do |builder|
+rules:
+  - id: sample.1
+    pattern: foo
+    message: Hello
+  - id: sample.2
+    trigger: 
+      - pattern: 
+          - token: "[NSArray new]"
+        glob: []
+        pass:
+          - "[[NSArray alloc] init]"
+        fail:
+          - "[NSArray new]"
+          - "[NSArray  new ]"        
+      - pattern: 
+          - token: "dangerouslySetInnerHTML={"
+        glob: []
+        fail:
+          - "<div dangerouslySetInnerHTML={value} />"
+    message: Bar
+EOF
+      test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path, force_download: nil, home_path: builder.path + "home")
+      result = test.run
+
+      assert_equal 0, result
+      assert_equal <<MSG, stdout.string
+Validating rule id uniqueness...
+  OK!👍
+Testing rule sample.2...
+  Testing 1st trigger...
+  Testing 2nd trigger...
+  OK!🎉
+MSG
     end
   end
 
@@ -48,31 +95,74 @@ rules:
     message: Baz
 EOF
       test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path, force_download: nil, home_path: builder.path + "home")
+      result = test.run
 
-      assert_equal 1, test.run
-      assert_match /Found 1 duplications/, stdout.string
-      assert_match /sample\.1/, stdout.string
-      refute_match /sample\.2/, stdout.string
+      assert_equal 1, result
+
+      assert_equal <<MSG, stdout.string
+Validating rule id uniqueness...
+  Found 1 duplications.😞
+    sample.1
+MSG
     end
   end
 
-  def test_pass_matches
+  def test_trigger_fail
     with_config(<<EOF) do |builder|
 rules:
   - id: sample.1
-    pattern: foo
     message: Hello
+    trigger:
+      - pattern: 
+          - foo
+        glob: []
+        pass: foobar
+        fail:
+          - foo bar
+          - baz
+EOF
+      test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path, force_download: nil, home_path: builder.path + "home")
+      result = test.run
+
+      assert_equal 1, result
+      assert_equal <<MSG, stdout.string
+Validating rule id uniqueness...
+  OK!👍
+Testing rule sample.1...
+  Testing 1st trigger...
+    1st pass example matched.😱
+    2nd fail example didn't match.😱
+MSG
+    end
+  end
+
+  def test_pattern_skip
+    with_config(<<EOF) do |builder|
+rules:
+  - id: sample.1
+    message: Hello
+    pattern: 
+      literal: foo
+      glob: ["foo.rb"]
     pass: foobar
     fail:
-      - foo bar
       - baz
 EOF
       test = Test.new(stdout: stdout, stderr: stderr, config_path: builder.config_path, force_download: nil, home_path: builder.path + "home")
+      result = test.run
 
-      assert_equal 1, test.run
-      assert_match /Testing rule sample\.1/, stdout.string
-      assert_match /1st pass example matched./, stdout.string
-      assert_match /2nd fail example didn't match./, stdout.string
+      assert_equal 1, result
+      assert_equal <<MSG, stdout.string
+Validating rule id uniqueness...
+  OK!👍
+Testing rule sample.1...
+  Testing pattern...
+    1st pass example matched.😱
+  Testing pattern...
+    1st pass example matched.😱
+  🚨 The rule contains a `pattern` with `glob`, which is not supported by the test command.
+    Skips testing `fail` examples.
+MSG
     end
   end
 end

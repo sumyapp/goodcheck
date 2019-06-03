@@ -96,7 +96,7 @@ class ConfigLoaderTest < Minitest::Test
     assert_equal "Shift_JIS", g3.encoding
   end
 
-  def test_load_rule
+  def test_load_pattern_rule
     loader = config_loader()
     rule = loader.load_rule({ id: "com.id.1", message: "Some message", pattern: "foo.bar" })
 
@@ -105,6 +105,7 @@ class ConfigLoaderTest < Minitest::Test
     assert_equal "Some message", rule.message
     assert_equal [], rule.justifications
     rule.triggers[0].tap do |trigger|
+      assert_operator trigger, :by_pattern?
       assert_equal ["foo.bar"], trigger.patterns.map(&:source)
       assert_equal [], trigger.globs
       assert_equal [], trigger.passes
@@ -113,7 +114,7 @@ class ConfigLoaderTest < Minitest::Test
     end
   end
 
-  def test_load_rule_case
+  def test_load_pattern_rule_case
     loader = config_loader()
     rule = loader.load_rule({
                               id: "com.id.1",
@@ -139,10 +140,99 @@ class ConfigLoaderTest < Minitest::Test
     assert_equal [], rule.justifications
 
     rule.triggers[0].tap do |trigger|
+      assert_operator trigger, :by_pattern?
       assert_equal [/foo\.bar/, /foo\.bar\.baz/i, /foo/i], trigger.patterns.map(&:regexp)
       assert_equal [], trigger.globs
       assert_equal [], trigger.passes
       assert_equal [], trigger.fails
+    end
+  end
+
+  def test_load_pattern_and_glob
+    loader = config_loader()
+    rule = loader.load_rule(
+      {
+        id: "com.id.1",
+        message: "Some message",
+        pattern: [
+          { literal: "foo.bar", glob: "*.rb" },
+          { literal: "File.open", glob: "*.rb" },
+          { literal: "background-color" },
+          { literal: "margin-left" }
+        ],
+        glob: ["app/**/*"],
+        pass: ["hogehoge"],
+        fail: ["foo.bar.baz"]
+      }
+    )
+
+    assert_instance_of Rule, rule
+    assert_equal "com.id.1", rule.id
+    assert_equal "Some message", rule.message
+    assert_equal [], rule.justifications
+
+    # Make triggers for each glob
+    assert_equal 3, rule.triggers.size
+
+    rule.triggers[0].tap do |trigger|
+      assert_operator trigger, :by_pattern?
+      assert_equal ["foo.bar"], trigger.patterns.map(&:source)
+      assert_equal [Goodcheck::Glob.new(pattern: "*.rb", encoding: nil)], trigger.globs
+      assert_equal ["hogehoge"], trigger.passes
+      assert_operator trigger, :skips_fail_examples?
+      assert_equal [], trigger.fails
+      refute_operator trigger, :negated?
+    end
+
+    rule.triggers[1].tap do |trigger|
+      assert_operator trigger, :by_pattern?
+      assert_equal ["File.open"], trigger.patterns.map(&:source)
+      assert_equal [Goodcheck::Glob.new(pattern: "*.rb", encoding: nil)], trigger.globs
+      assert_equal ["hogehoge"], trigger.passes
+      assert_operator trigger, :skips_fail_examples?
+      assert_equal [], trigger.fails
+      refute_operator trigger, :negated?
+    end
+
+    rule.triggers[2].tap do |trigger|
+      assert_operator trigger, :by_pattern?
+      assert_equal ["background-color", "margin-left"], trigger.patterns.map(&:source)
+      assert_equal [Goodcheck::Glob.new(pattern: "app/**/*", encoding: nil)], trigger.globs
+      assert_equal ["hogehoge"], trigger.passes
+      assert_operator trigger, :skips_fail_examples?
+      assert_equal [], trigger.fails
+      refute_operator trigger, :negated?
+    end
+  end
+
+  def test_load_rule_trigger
+    loader = config_loader()
+    rule = loader.load_rule(
+      {
+        id: "com.id.1",
+        message: "Some message",
+        trigger: [
+          {
+            pattern: "foo.bar",
+            glob: ["*.rb"],
+            pass: ["foo.baz"],
+            fail: ["foo.bar.baz"]
+          }
+        ]
+      }
+    )
+
+    assert_instance_of Rule, rule
+    assert_equal "com.id.1", rule.id
+    assert_equal "Some message", rule.message
+    assert_equal [], rule.justifications
+    rule.triggers[0].tap do |trigger|
+      refute_operator trigger, :by_pattern?
+      assert_equal ["foo.bar"], trigger.patterns.map(&:source)
+      assert_equal [Goodcheck::Glob.new(pattern: "*.rb", encoding: nil)], trigger.globs
+      assert_equal ["foo.baz"], trigger.passes
+      assert_equal ["foo.bar.baz"], trigger.fails
+      refute_operator trigger, :negated?
     end
   end
 
@@ -332,54 +422,6 @@ EOF
       config = loader.load
 
       assert config.rules.any? {|rule| rule.id == "imported_rule" }
-    end
-  end
-
-  def test_pattern_globs
-    mktmpdir do |path|
-      config_path = path + "goodcheck.yml"
-
-      loader = ConfigLoader.new(
-        path: config_path,
-        content: {
-          rules: [
-            {
-              id: "1",
-              message: "foo",
-              pattern: {
-                literal: "foo",
-                glob: "foo.rb"
-              }
-            },
-            {
-              id: "2",
-              message: "foo",
-              pattern: {
-                literal: "bar",
-                glob: [
-                  "**/*.ts"
-                ]
-              }
-            }
-          ],
-        },
-        stderr: stderr,
-        import_loader: import_loader
-      )
-
-      config = loader.load
-
-      config.rules.find {|rule| rule.id == "1" }.tap do |rule|
-        rule.triggers[0].tap do |trigger|
-          assert_equal [], trigger.globs
-        end
-      end
-
-      config.rules.find {|rule| rule.id == "2" }.tap do |rule|
-        rule.triggers[0].tap do |trigger|
-          assert_equal [], trigger.globs
-        end
-      end
     end
   end
 

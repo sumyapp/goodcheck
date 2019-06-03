@@ -58,37 +58,52 @@ module Goodcheck
         config.rules.each do |rule|
           if rule.triggers.any? {|trigger| !trigger.passes.empty? || !trigger.fails.empty?}
             stdout.puts "Testing rule #{rule.id}..."
-          end
 
-          rule.triggers.each do |trigger|
-            if !trigger.passes.empty? || !trigger.fails.empty?
-              pass_errors = trigger.passes.each.with_index.select do |pass, index|
-                rule_matches_example?(rule, trigger, pass)
-              end
+            rule_ok = true
 
-              fail_errors = trigger.fails.each.with_index.reject do |fail, index|
-                rule_matches_example?(rule, trigger, fail)
-              end
+            rule.triggers.each.with_index do |trigger, index|
+              if !trigger.passes.empty? || !trigger.fails.empty?
+                if trigger.by_pattern?
+                  stdout.puts "  Testing pattern..."
+                else
+                  stdout.puts "  Testing #{(index+1).ordinalize} trigger..."
+                end
 
-              unless pass_errors.empty?
-                test_pass = false
+                pass_errors = trigger.passes.each.with_index.select do |pass, _|
+                  rule_matches_example?(rule, trigger, pass)
+                end
 
-                pass_errors.each do |_, index|
-                  stdout.puts "  #{(index+1).ordinalize} pass example matched.😱"
+                fail_errors = trigger.fails.each.with_index.reject do |fail, _|
+                  rule_matches_example?(rule, trigger, fail)
+                end
+
+                unless pass_errors.empty?
+                  test_pass = false
+                  rule_ok = false
+
+                  pass_errors.each do |_, index|
+                    stdout.puts "    #{(index+1).ordinalize} pass example matched.😱"
+                  end
+                end
+
+                unless fail_errors.empty?
+                  test_pass = false
+                  rule_ok = false
+
+                  fail_errors.each do |_, index|
+                    stdout.puts "    #{(index+1).ordinalize} fail example didn't match.😱"
+                  end
                 end
               end
+            end
 
-              unless fail_errors.empty?
-                test_pass = false
+            if rule.triggers.any?(&:skips_fail_examples?)
+              stdout.puts "  🚨 The rule contains a `pattern` with `glob`, which is not supported by the test command."
+              stdout.puts "    Skips testing `fail` examples."
+            end
 
-                fail_errors.each do |_, index|
-                  stdout.puts "  #{(index+1).ordinalize} fail example didn't match.😱"
-                end
-              end
-
-              if pass_errors.empty? && fail_errors.empty?
-                stdout.puts "  OK!🎉"
-              end
+            if rule_ok
+              stdout.puts "  OK!🎉"
             end
           end
         end

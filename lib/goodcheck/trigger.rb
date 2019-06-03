@@ -14,6 +14,25 @@ module Goodcheck
       @negated = negated
     end
 
+    def by_pattern!
+      @by_pattern = true
+      self
+    end
+
+    def by_pattern?
+      # True if the trigger is from `pattern` or `not` attribute (compatible mode.)
+      @by_pattern
+    end
+
+    def skips_fail_examples!(flag = true)
+      @skips_fail_examples = flag
+      self
+    end
+
+    def skips_fail_examples?
+      @skips_fail_examples
+    end
+
     def negated?
       @negated
     end

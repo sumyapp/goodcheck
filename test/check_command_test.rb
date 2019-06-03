@@ -202,7 +202,7 @@ Invalid config: TypeError at $.rules[0]: expected=rule, value={:id=>"foo", :mess
    $ expected to be config
 
 Where:
-  rule = enum(positive_rule, negative_rule, nopattern_rule)
+  rule = enum(positive_rule, negative_rule, nopattern_rule, triggered_rule)
   rules = array(rule)
   config = {
     "rules": rules,
@@ -232,6 +232,12 @@ Where:
     "message": string,
     "justification": optional(enum(array(string), string)),
     "glob": glob
+  }
+  triggered_rule = {
+    "id": string,
+    "message": string,
+    "justification": optional(enum(array(string), string)),
+    "trigger": enum(array(trigger), trigger)
   }
 MSG
       end
