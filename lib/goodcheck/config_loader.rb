@@ -180,14 +180,26 @@ module Goodcheck
       Goodcheck.logger.debug "Loading rule: #{hash[:id]}"
 
       id = hash[:id]
-      patterns, negated = retrieve_patterns(hash)
+      triggers = retrieve_triggers(hash)
       justifications = array(hash[:justification])
-      globs = load_globs(array(hash[:glob]))
       message = hash[:message].chomp
+
+      Rule.new(id: id, message: message, justifications: justifications, triggers: triggers)
+    end
+
+    def retrieve_triggers(hash)
+      patterns, negated = retrieve_patterns(hash)
+      globs = load_globs(array(hash[:glob]))
       passes = array(hash[:pass])
       fails = array(hash[:fail])
 
-      Rule.new(id: id, patterns: patterns, justifications: justifications, globs: globs, message: message, passes: passes, fails: fails, negated: negated)
+      [
+        Trigger.new(patterns: patterns,
+                    globs: globs,
+                    passes: passes,
+                    fails: fails,
+                    negated: negated)
+      ]
     end
 
     def retrieve_patterns(hash)
@@ -221,21 +233,24 @@ module Goodcheck
       when String
         Pattern.literal(pattern, case_sensitive: true)
       when Hash
-        globs = load_globs(array(pattern[:glob]))
+        if pattern[:glob]
+          print_warning_once "🌏 Pattern with glob is deprecated: globs are ignored at all."
+        end
+
         case
         when pattern[:literal]
           cs = case_sensitive?(pattern)
           literal = pattern[:literal]
-          Pattern.literal(literal, case_sensitive: cs, globs: globs)
+          Pattern.literal(literal, case_sensitive: cs)
         when pattern[:regexp]
           regexp = pattern[:regexp]
           cs = case_sensitive?(pattern)
           multiline = pattern[:multiline]
-          Pattern.regexp(regexp, case_sensitive: cs, multiline: multiline, globs: globs)
+          Pattern.regexp(regexp, case_sensitive: cs, multiline: multiline)
         when pattern[:token]
           tok = pattern[:token]
           cs = case_sensitive?(pattern)
-          Pattern.token(tok, case_sensitive: cs, globs: globs)
+          Pattern.token(tok, case_sensitive: cs)
         end
       end
     end

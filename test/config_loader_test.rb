@@ -103,12 +103,14 @@ class ConfigLoaderTest < Minitest::Test
     assert_instance_of Rule, rule
     assert_equal "com.id.1", rule.id
     assert_equal "Some message", rule.message
-    assert_equal ["foo.bar"], rule.patterns.map(&:source)
     assert_equal [], rule.justifications
-    assert_equal [], rule.globs
-    assert_equal [], rule.passes
-    assert_equal [], rule.fails
-    refute_operator rule, :negated?
+    rule.triggers[0].tap do |trigger|
+      assert_equal ["foo.bar"], trigger.patterns.map(&:source)
+      assert_equal [], trigger.globs
+      assert_equal [], trigger.passes
+      assert_equal [], trigger.fails
+      refute_operator trigger, :negated?
+    end
   end
 
   def test_load_rule_case
@@ -134,11 +136,14 @@ class ConfigLoaderTest < Minitest::Test
     assert_instance_of Rule, rule
     assert_equal "com.id.1", rule.id
     assert_equal "Some message", rule.message
-    assert_equal [/foo\.bar/, /foo\.bar\.baz/i, /foo/i], rule.patterns.map(&:regexp)
     assert_equal [], rule.justifications
-    assert_equal [], rule.globs
-    assert_equal [], rule.passes
-    assert_equal [], rule.fails
+
+    rule.triggers[0].tap do |trigger|
+      assert_equal [/foo\.bar/, /foo\.bar\.baz/i, /foo/i], trigger.patterns.map(&:regexp)
+      assert_equal [], trigger.globs
+      assert_equal [], trigger.passes
+      assert_equal [], trigger.fails
+    end
   end
 
   def test_load_rule_case_warning
@@ -177,12 +182,15 @@ class ConfigLoaderTest < Minitest::Test
     assert_instance_of Rule, rule
     assert_equal "com.id.1", rule.id
     assert_equal "Some message", rule.message
-    assert_equal ["foo.bar"], rule.patterns.map(&:source)
     assert_equal [], rule.justifications
-    assert_equal [], rule.globs
-    assert_equal [], rule.passes
-    assert_equal [], rule.fails
-    assert_operator rule, :negated?
+
+    rule.triggers[0].tap do |trigger|
+      assert_equal ["foo.bar"], trigger.patterns.map(&:source)
+      assert_equal [], trigger.globs
+      assert_equal [], trigger.passes
+      assert_equal [], trigger.fails
+      assert_operator trigger, :negated?
+    end
   end
 
   def test_load_config_failure
@@ -362,13 +370,15 @@ EOF
       config = loader.load
 
       config.rules.find {|rule| rule.id == "1" }.tap do |rule|
-        assert_equal [], rule.globs
-        assert_equal ["foo.rb"], rule.patterns[0].globs.map(&:pattern)
+        rule.triggers[0].tap do |trigger|
+          assert_equal [], trigger.globs
+        end
       end
 
       config.rules.find {|rule| rule.id == "2" }.tap do |rule|
-        assert_equal [], rule.globs
-        assert_equal ["**/*.ts"], rule.patterns[0].globs.map(&:pattern)
+        rule.triggers[0].tap do |trigger|
+          assert_equal [], trigger.globs
+        end
       end
     end
   end
@@ -395,8 +405,10 @@ EOF
       config = loader.load
 
       config.rules.find {|rule| rule.id == "1" }.tap do |rule|
-        assert_equal ["db/schema.rb"], rule.globs.map(&:pattern)
-        assert_equal [], rule.patterns
+        rule.triggers[0].tap do |trigger|
+          assert_equal [], trigger.patterns
+          assert_equal ["db/schema.rb"], trigger.globs.map(&:pattern)
+        end
       end
     end
   end

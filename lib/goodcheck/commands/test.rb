@@ -56,35 +56,39 @@ module Goodcheck
         test_pass = true
 
         config.rules.each do |rule|
-          if !rule.passes.empty? || !rule.fails.empty?
+          if rule.triggers.any? {|trigger| !trigger.passes.empty? || !trigger.fails.empty?}
             stdout.puts "Testing rule #{rule.id}..."
+          end
 
-            pass_errors = rule.passes.each.with_index.select do |pass, index|
-              rule_matches_example?(rule, pass)
-            end
-
-            fail_errors = rule.fails.each.with_index.reject do |fail, index|
-              rule_matches_example?(rule, fail)
-            end
-
-            unless pass_errors.empty?
-              test_pass = false
-
-              pass_errors.each do |_, index|
-                stdout.puts "  #{(index+1).ordinalize} pass example matched.😱"
+          rule.triggers.each do |trigger|
+            if !trigger.passes.empty? || !trigger.fails.empty?
+              pass_errors = trigger.passes.each.with_index.select do |pass, index|
+                rule_matches_example?(rule, trigger, pass)
               end
-            end
 
-            unless fail_errors.empty?
-              test_pass = false
-
-              fail_errors.each do |_, index|
-                stdout.puts "  #{(index+1).ordinalize} fail example didn't match.😱"
+              fail_errors = trigger.fails.each.with_index.reject do |fail, index|
+                rule_matches_example?(rule, trigger, fail)
               end
-            end
 
-            if pass_errors.empty? && fail_errors.empty?
-              stdout.puts "  OK!🎉"
+              unless pass_errors.empty?
+                test_pass = false
+
+                pass_errors.each do |_, index|
+                  stdout.puts "  #{(index+1).ordinalize} pass example matched.😱"
+                end
+              end
+
+              unless fail_errors.empty?
+                test_pass = false
+
+                fail_errors.each do |_, index|
+                  stdout.puts "  #{(index+1).ordinalize} fail example didn't match.😱"
+                end
+              end
+
+              if pass_errors.empty? && fail_errors.empty?
+                stdout.puts "  OK!🎉"
+              end
             end
           end
         end
@@ -92,10 +96,9 @@ module Goodcheck
         test_pass
       end
 
-      def rule_matches_example?(rule, example)
+      def rule_matches_example?(rule, trigger, example)
         buffer = Buffer.new(path: Pathname("-"), content: example)
-        analyzer = Analyzer.new(rule: rule, buffer: buffer)
-        analyzer.use_all_patterns!
+        analyzer = Analyzer.new(rule: rule, buffer: buffer, trigger: trigger)
         analyzer.scan.count > 0
       end
     end

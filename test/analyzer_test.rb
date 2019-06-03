@@ -7,6 +7,7 @@ class AnalyzerTest < Minitest::Test
   Rule = Goodcheck::Rule
   Pattern = Goodcheck::Pattern
   Location = Goodcheck::Location
+  Trigger = Goodcheck::Trigger
 
   def buffer
     @buffer = Buffer.new(path: Pathname("foo.txt"), content: <<-EOF)
@@ -24,12 +25,22 @@ NSArray *a = [ NSMutableArray
     yield Buffer.new(path: path, content: content)
   end
 
-  def new_rule(id, *patterns, globs: [])
-    Rule.new(id: id, patterns: patterns, message: "hello", justifications: [], globs: globs, passes: [], fails: [], negated: false)
+  def new_rule(id:, message: "hello")
+    Rule.new(id: id, message: message, triggers: [], justifications: [])
+  end
+
+  def new_trigger(negated: false, &block)
+    Trigger.new(patterns: [], globs: [], passes: [], fails: [], negated: negated).tap(&block)
   end
 
   def test_analyzer
-    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.literal("ipsum", case_sensitive: true)))
+    analyzer = Analyzer.new(
+      buffer: buffer,
+      rule: new_rule(id: "rule1"),
+      trigger: new_trigger {|trigger|
+        trigger.patterns << Pattern.literal("ipsum", case_sensitive: true)
+      }
+    )
 
     issues = analyzer.scan.to_a
 
@@ -39,7 +50,13 @@ NSArray *a = [ NSMutableArray
   end
 
   def test_analyzer_japanese
-    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.literal("吾輩", case_sensitive: true)))
+    analyzer = Analyzer.new(
+      buffer: buffer,
+      rule: new_rule(id: "rule1"),
+      trigger: new_trigger {|trigger|
+        trigger.patterns << Pattern.literal("吾輩", case_sensitive: true)
+      }
+    )
 
     issues = analyzer.scan.to_a
 
@@ -49,7 +66,13 @@ NSArray *a = [ NSMutableArray
   end
 
   def test_analyzer_tokens
-    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.token("[NSMutableArray new]", case_sensitive: true)))
+    analyzer = Analyzer.new(
+      buffer: buffer,
+      rule: new_rule(id: "rule1"),
+      trigger: new_trigger {|trigger|
+        trigger.patterns << Pattern.token("[NSMutableArray new]", case_sensitive: true)
+      }
+    )
 
     issues = analyzer.scan.to_a
 
@@ -60,10 +83,13 @@ NSArray *a = [ NSMutableArray
   end
 
   def test_analyzer_no_duplicate
-    analyzer = Analyzer.new(buffer: buffer, rule:
-      new_rule("rule1",
-               Pattern.regexp("N.Array", case_sensitive: false, multiline: false),
-               Pattern.regexp("NSAr.ay", case_sensitive: false, multiline: false))
+    analyzer = Analyzer.new(
+      buffer: buffer,
+      rule: new_rule(id: "rule1"),
+      trigger: new_trigger {|trigger|
+        trigger.patterns << Pattern.regexp("N.Array", case_sensitive: false, multiline: false)
+        trigger.patterns << Pattern.regexp("NSAr.ay", case_sensitive: false, multiline: false)
+      }
     )
 
     issues = analyzer.scan.to_a
@@ -74,7 +100,13 @@ NSArray *a = [ NSMutableArray
   end
 
   def test_analyzer_token_word_brake
-    analyzer = Analyzer.new(buffer: buffer, rule: new_rule("rule1", Pattern.token("Array", case_sensitive: true)))
+    analyzer = Analyzer.new(
+      buffer: buffer,
+      rule: new_rule(id: "rule1"),
+      trigger: new_trigger {|trigger|
+        trigger.patterns << Pattern.token("Array", case_sensitive: true)
+      }
+    )
 
     issues = analyzer.scan.to_a
     assert_empty issues
@@ -86,8 +118,13 @@ test1
 test
 atest
       CONTENT
-      analyzer = Analyzer.new(buffer: buffer,
-                              rule: new_rule("rule1", Pattern.regexp('(\btest\b|foo)', case_sensitive: false, multiline: false)))
+      analyzer = Analyzer.new(
+        buffer: buffer,
+        rule: new_rule(id: "rule1"),
+        trigger: new_trigger {|trigger|
+          trigger.patterns << Pattern.regexp('(\btest\b|foo)', case_sensitive: false, multiline: false)
+        }
+      )
 
       assert_equal 1, analyzer.scan.count
     end
@@ -99,9 +136,13 @@ test1
 test
 atest
     CONTENT
-      analyzer = Analyzer.new(buffer: buffer,
-                              rule: new_rule("rule1",
-                                             globs: Goodcheck::Glob.new(pattern: "*.txt", encoding: nil)))
+      analyzer = Analyzer.new(
+        buffer: buffer,
+        rule: new_rule(id: "rule1"),
+        trigger: new_trigger {|trigger|
+          trigger.globs << Goodcheck::Glob.new(pattern: "*.txt", encoding: nil)
+        }
+      )
 
       issues = analyzer.scan.to_a
 

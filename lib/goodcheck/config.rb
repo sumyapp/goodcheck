@@ -24,20 +24,22 @@ module Goodcheck
       end
     end
 
-    def rules_for_path(path, rules_filter:, &block)
+    def rules_for_path(path, rules_filter:)
       if block_given?
         each_rule(filter: rules_filter).map do |rule|
-          globs = rule.patterns.flat_map(&:globs).push(*rule.globs)
+          rule.triggers.each do |trigger|
+            globs = trigger.globs
 
-          if globs.empty?
-            [rule, nil]
-          else
-            glob = globs.find {|glob| glob.test(path) }
-            if glob
-              [rule, glob]
+            if globs.empty?
+              yield [rule, nil, trigger]
+            else
+              glob = globs.find {|glob| glob.test(path) }
+              if glob
+                yield [rule, glob, trigger]
+              end
             end
           end
-        end.compact.each(&block)
+        end
       else
         enum_for(:rules_for_path, path, rules_filter: rules_filter)
       end
