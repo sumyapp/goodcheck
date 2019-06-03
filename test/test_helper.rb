@@ -2,6 +2,9 @@ $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
 require "goodcheck"
 
 require "minitest/autorun"
+require "minitest/reporters"
+Minitest::Reporters.use!
+
 require_relative "test_case_builder"
 require "open3"
 require "securerandom"
