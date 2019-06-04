@@ -36,6 +36,10 @@ The `init` command generates template of `goodcheck.yml` configuration file for 
 Edit the config file to define patterns you want to check.
 Then run `check` command, and it will print matched texts.
 
+### Cheatsheet
+
+You can download a [printable cheatsheet](cheatsheet.pdf) from this repository.
+
 ## `goodcheck.yml`
 
 An example of configuration is like the following:
