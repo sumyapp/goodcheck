@@ -80,49 +80,6 @@ EOF
     end
   end
 
-  def test_check_pattern_glob
-    TestCaseBuilder.tmpdir do |builder|
-      builder.config content: <<EOF
-rules:
-  - id: foo
-    message: Foo
-    pattern:
-      - regexp: hello
-        multiline: true
-        glob: "*.css"
-      - literal: font
-        glob: "*.rb"
-    glob:
-      - "*"
-EOF
-
-      builder.file name: Pathname("user.rb"), content: <<-EOF
-puts "hello world"
-puts "font-size"
-      EOF
-      builder.file name: Pathname("user.css"), content: <<-EOF
-.hello {
-  font-size: 123px;
-}
-      EOF
-      builder.file name: Pathname("user.html"), content: <<-EOF
-<h1 style="font-size: 12px">hello world<h1>
-      EOF
-
-      builder.cd do
-        reporter = Reporters::Text.new(stdout: stdout)
-        check = Check.new(config_path: builder.config_path, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
-
-        assert_equal 2, check.run
-
-        assert_equal <<-MSG, stdout.string
-user.css:1:.hello {:\tFoo
-user.rb:2:puts "font-size":\tFoo
-        MSG
-      end
-    end
-  end
-
   def test_check_no_pattern
     TestCaseBuilder.tmpdir do |builder|
       builder.config content: <<EOF
@@ -245,7 +202,7 @@ Invalid config: TypeError at $.rules[0]: expected=rule, value={:id=>"foo", :mess
    $ expected to be config
 
 Where:
-  rule = enum(positive_rule, negative_rule, nopattern_rule)
+  rule = enum(positive_rule, negative_rule, nopattern_rule, triggered_rule)
   rules = array(rule)
   config = {
     "rules": rules,
@@ -275,6 +232,12 @@ Where:
     "message": string,
     "justification": optional(enum(array(string), string)),
     "glob": glob
+  }
+  triggered_rule = {
+    "id": string,
+    "message": string,
+    "justification": optional(enum(array(string), string)),
+    "trigger": enum(array(trigger), trigger)
   }
 MSG
       end

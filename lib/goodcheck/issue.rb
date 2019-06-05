@@ -27,5 +27,18 @@ module Goodcheck
         @location
       end
     end
+
+    def ==(other)
+      other.is_a?(Issue) &&
+        other.buffer == buffer &&
+        other.range == range &&
+        other.rule == rule
+    end
+
+    alias eql? ==
+
+    def hash
+      self.class.hash ^ buffer.hash ^ range.hash ^ rule.hash
+    end
   end
 end

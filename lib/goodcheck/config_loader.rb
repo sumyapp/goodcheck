@@ -95,12 +95,58 @@ module Goodcheck
         glob: glob
       )
 
+      let :positive_trigger, object(
+        pattern: array_or(pattern),
+        glob: optional(glob),
+        pass: optional(array_or(string)),
+        fail: optional(array_or(string))
+      )
+
+      let :negative_trigger, object(
+        not: object(pattern: array_or(pattern)),
+        glob: optional(glob),
+        pass: optional(array_or(string)),
+        fail: optional(array_or(string))
+      )
+
+      let :nopattern_trigger, object(
+        glob: glob_obj
+      )
+
+      let :trigger, enum(
+        positive_trigger,
+        negative_trigger,
+        nopattern_trigger,
+        detector: -> (hash) {
+          if hash.is_a?(Hash)
+            case
+            when hash.key?(:pattern)
+              positive_trigger
+            when hash.key?(:not)
+              negative_trigger
+            else
+              nopattern_trigger
+            end
+          end
+        }
+      )
+
+      let :triggered_rule, object(
+        id: string,
+        message: string,
+        justification: optional(array_or(string)),
+        trigger: array_or(trigger)
+      )
+
       let :rule, enum(positive_rule,
                       negative_rule,
                       nopattern_rule,
+                      triggered_rule,
                       detector: -> (hash) {
                         if hash.is_a?(Hash)
                           case
+                          when hash[:trigger]
+                            triggered_rule
                           when hash[:pattern]
                             positive_rule
                           when hash[:not]
@@ -180,14 +226,76 @@ module Goodcheck
       Goodcheck.logger.debug "Loading rule: #{hash[:id]}"
 
       id = hash[:id]
-      patterns, negated = retrieve_patterns(hash)
+      triggers = retrieve_triggers(hash)
       justifications = array(hash[:justification])
-      globs = load_globs(array(hash[:glob]))
       message = hash[:message].chomp
+
+      Rule.new(id: id, message: message, justifications: justifications, triggers: triggers)
+    end
+
+    def retrieve_triggers(hash)
+      if hash.key?(:trigger)
+        array(hash[:trigger]).map do |trigger|
+          retrieve_trigger(trigger)
+        end
+      else
+        globs = load_globs(array(hash[:glob]))
+        passes = array(hash[:pass])
+        fails = array(hash[:fail])
+
+        if hash.key?(:not) || hash.key?(:pattern)
+          if hash.key?(:not)
+            negated = true
+            patterns = array(hash[:not][:pattern])
+          else
+            negated = false
+            patterns = array(hash[:pattern])
+          end
+
+          glob_patterns, noglob_patterns = patterns.partition {|pat|
+            pat.is_a?(Hash) && pat.key?(:glob)
+          }
+
+          skip_fails = !fails.empty? && !glob_patterns.empty?
+
+          glob_patterns.map do |pat|
+            Trigger.new(
+              patterns: [load_pattern(pat)],
+              globs: load_globs(array(pat[:glob])),
+              passes: passes,
+              fails: [],
+              negated: negated
+            ).by_pattern!.skips_fail_examples!(skip_fails)
+          end.push(
+            Trigger.new(
+              patterns: noglob_patterns.map {|pat| load_pattern(pat) },
+              globs: globs,
+              passes: passes,
+              fails: glob_patterns.empty? ? fails : [],
+              negated: negated
+            ).by_pattern!.skips_fail_examples!(skip_fails)
+          )
+        else
+          [Trigger.new(patterns: [],
+                       globs: globs,
+                       passes: passes,
+                       fails: fails,
+                       negated: false).by_pattern!]
+        end
+      end
+    end
+
+    def retrieve_trigger(hash)
+      patterns, negated = retrieve_patterns(hash)
+      globs = load_globs(array(hash[:glob]))
       passes = array(hash[:pass])
       fails = array(hash[:fail])
 
-      Rule.new(id: id, patterns: patterns, justifications: justifications, globs: globs, message: message, passes: passes, fails: fails, negated: negated)
+      Trigger.new(patterns: patterns,
+                  globs: globs,
+                  passes: passes,
+                  fails: fails,
+                  negated: negated)
     end
 
     def retrieve_patterns(hash)
@@ -221,21 +329,24 @@ module Goodcheck
       when String
         Pattern.literal(pattern, case_sensitive: true)
       when Hash
-        globs = load_globs(array(pattern[:glob]))
+        if pattern[:glob]
+          print_warning_once "🌏 Pattern with glob is deprecated: globs are ignored at all."
+        end
+
         case
         when pattern[:literal]
           cs = case_sensitive?(pattern)
           literal = pattern[:literal]
-          Pattern.literal(literal, case_sensitive: cs, globs: globs)
+          Pattern.literal(literal, case_sensitive: cs)
         when pattern[:regexp]
           regexp = pattern[:regexp]
           cs = case_sensitive?(pattern)
           multiline = pattern[:multiline]
-          Pattern.regexp(regexp, case_sensitive: cs, multiline: multiline, globs: globs)
+          Pattern.regexp(regexp, case_sensitive: cs, multiline: multiline)
         when pattern[:token]
           tok = pattern[:token]
           cs = case_sensitive?(pattern)
-          Pattern.token(tok, case_sensitive: cs, globs: globs)
+          Pattern.token(tok, case_sensitive: cs)
         end
       end
     end

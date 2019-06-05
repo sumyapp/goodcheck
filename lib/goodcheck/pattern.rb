@@ -2,23 +2,20 @@ module Goodcheck
   class Pattern
     attr_reader :source
     attr_reader :regexp
-    attr_reader :globs
 
-    def initialize(source:, regexp:, globs:)
+    def initialize(source:, regexp:)
       @source = source
       @regexp = regexp
-      @globs = globs
     end
 
-    def self.literal(literal, case_sensitive:, globs: [])
+    def self.literal(literal, case_sensitive:)
       new(
         source: literal,
         regexp: Regexp.compile(Regexp.escape(literal), !case_sensitive),
-        globs: globs
       )
     end
 
-    def self.regexp(regexp, case_sensitive:, multiline:, globs: [])
+    def self.regexp(regexp, case_sensitive:, multiline:)
       options = 0
       options |= Regexp::IGNORECASE unless case_sensitive
       options |= Regexp::MULTILINE if multiline
@@ -26,15 +23,13 @@ module Goodcheck
       new(
         source: regexp,
         regexp: Regexp.compile(regexp, options),
-        globs: globs
       )
     end
 
-    def self.token(tokens, case_sensitive:, globs: [])
+    def self.token(tokens, case_sensitive:)
       new(
         source: tokens,
         regexp: compile_tokens(tokens, case_sensitive: case_sensitive),
-        globs: globs
       )
     end
 

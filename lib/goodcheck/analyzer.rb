@@ -1,42 +1,23 @@
 module Goodcheck
   class Analyzer
     attr_reader :rule
+    attr_reader :trigger
     attr_reader :buffer
 
-    def initialize(rule:, buffer:)
+    def initialize(rule:, trigger:, buffer:)
       @rule = rule
+      @trigger = trigger
       @buffer = buffer
-    end
-
-    def use_all_patterns!
-      @use_all_patterns = true
-    end
-
-    def patterns
-      if @use_all_patterns
-        rule.patterns
-      else
-        rule.patterns.select do |pattern|
-          case
-          when pattern.globs.empty? && rule.globs.empty?
-            true
-          when pattern.globs.empty?
-            rule.globs.any? {|glob| glob.test(buffer.path) }
-          else
-            pattern.globs.any? {|glob| glob.test(buffer.path) }
-          end
-        end
-      end
     end
 
     def scan(&block)
       if block_given?
-        if rule.patterns.empty?
+        if trigger.patterns.empty?
           yield Issue.new(buffer: buffer, range: nil, rule: rule, text: nil)
         else
-          regexp = Regexp.union(*patterns.map(&:regexp))
+          regexp = Regexp.union(*trigger.patterns.map(&:regexp))
 
-          unless rule.negated?
+          unless trigger.negated?
             issues = []
 
             scanner = StringScanner.new(buffer.content)

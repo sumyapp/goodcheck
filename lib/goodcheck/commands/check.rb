@@ -28,12 +28,16 @@ module Goodcheck
 
           reporter.analysis do
             load_config!(force_download: force_download, cache_path: cache_dir_path)
-            each_check do |buffer, rule|
+            each_check do |buffer, rule, trigger|
+              reported_issues = Set[]
+
               reporter.rule(rule) do
-                analyzer = Analyzer.new(rule: rule, buffer: buffer)
+                analyzer = Analyzer.new(rule: rule, buffer: buffer, trigger: trigger)
                 analyzer.scan do |issue|
-                  issue_reported = true
-                  reporter.issue(issue)
+                  if reported_issues.add?(issue)
+                    issue_reported = true
+                    reporter.issue(issue)
+                  end
                 end
               end
             end
@@ -53,7 +57,7 @@ module Goodcheck
                 reporter.file(path) do
                   buffers = {}
 
-                  config.rules_for_path(path, rules_filter: rules) do |rule, glob|
+                  config.rules_for_path(path, rules_filter: rules) do |rule, glob, trigger|
                     Goodcheck.logger.debug "Checking rule: #{rule.id}"
                     begin
                       encoding = glob&.encoding || Encoding.default_external.name
@@ -66,7 +70,7 @@ module Goodcheck
                         buffers[encoding] = buffer
                       end
 
-                      yield buffer, rule
+                      yield buffer, rule, trigger
                     rescue ArgumentError => exn
                       stderr.puts "#{path}: #{exn.inspect}"
                     end
