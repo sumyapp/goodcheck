@@ -88,13 +88,11 @@ id: com.sample.GitHub
 pattern:
   literal: Github
   case_sensitive: true
-  glob: []
 message: Write GitHub, not Github
 ```
 
 All regexp meta characters included in the `literal` value will be escaped.
 `case_sensitive` is an optional key and the default is `true`.
-`glob` is an optional key and the default is empty.
 
 #### *regexp pattern*
 
@@ -106,13 +104,12 @@ pattern:
   regexp: \d{4,}
   case_sensitive: false
   multiline: false
-  glob: []
 message: Insert delimiters when writing large numbers
 justification:
   - When you are not writing numbers, including phone numbers, zip code, ...
 ```
 
-It accepts two optional attributes, `case_sensitive`, `multiline`, and `glob`.
+It accepts two optional attributes, `case_sensitive` and `multiline`.
 The default values of `case_sensitive` and `multiline` are `true` and `false` respectively.
 
 The regexp will be passed to `Regexp.compile`.
@@ -127,7 +124,6 @@ id: com.sample.no-blink
 pattern:
   token: "<blink"
   case_sensitive: false
-  glob: []
 message: Stop using <blink> tag
 glob: "**/*.html"
 justification:
@@ -141,7 +137,7 @@ In that case, try using *regexp pattern*.
 The generated regexp of `<blink` is `<\s*blink\b/m`.
 It matches with `<blink />` and `< BLINK>`, but does not match with `https://www.chromium.org/blink`.
 
-It accepts one optional attributes, `case_sensitive` and `glob`.
+It accepts one optional attribute `case_sensitive`.
 The default value of `case_sensitive` is `true`.
 Note that the generated regexp is in multiline mode.
 
@@ -211,6 +207,34 @@ The output will be something like:
 $ goodcheck check
 db/schema.rb:-:# This file is auto-generated from the current state of the database. Instead: Read the operation manual for DB migration: https://example.com/guides/123
 ```
+
+### Triggers
+
+Version 2.0.0 introduces new abstruction to define patterns, trigger.
+You can continue using `pattern`s in `rule`, but using `trigger` allows more flexible pattern definition and more precise testing.
+
+```
+rules:
+  - id: trigger
+    message: Using trigger
+    trigger:
+      - pattern: <blink
+        glob: "**/*.html"
+        fail:
+          - <blink></blink>
+      - not:
+          pattern:
+            token: <meta charset="UTF-8">
+            case_sensitive: false
+        glob: "**/*.html"
+        pass: |
+          <html>
+            <meta charset="utf-8"></meta>
+          </html>
+```
+
+You can continue existing `pattern` definitions, but `goodcheck test` against `pattern`s with `glob` does not work.
+If your `pattern` definition includes `glob`, swithing `trigger` would make sense.
 
 ## Importing rules
 
