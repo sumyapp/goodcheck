@@ -12,9 +12,9 @@ require "tmpdir"
 
 module Assertions
   def assert_pattern(object, regexp: nil, source: nil)
-    assert_instance_of Goodcheck::Pattern, object
-    assert_equal regexp, object.regexp if regexp
+    assert object.is_a?(Goodcheck::Pattern::Token) || object.is_a?(Goodcheck::Pattern::Literal) || object.is_a?(Goodcheck::Pattern::Regexp)
     assert_equal source, object.source if source
+    assert_equal regexp, object.regexp if regexp
   end
 end
 

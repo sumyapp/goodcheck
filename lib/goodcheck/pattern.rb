@@ -1,69 +1,84 @@
 module Goodcheck
-  class Pattern
-    attr_reader :source
-    attr_reader :regexp
+  module Pattern
+    class Literal
+      attr_reader :source
+      attr_reader :case_sensitive
 
-    def initialize(source:, regexp:)
-      @source = source
-      @regexp = regexp
+      def initialize(source:, case_sensitive:)
+        @source = source
+        @case_sensitive = case_sensitive
+      end
+
+      def regexp
+        @regexp ||= ::Regexp.compile(::Regexp.escape(source), !case_sensitive)
+      end
     end
 
-    def self.literal(literal, case_sensitive:)
-      new(
-        source: literal,
-        regexp: Regexp.compile(Regexp.escape(literal), !case_sensitive),
-      )
-    end
+    class Regexp
+      attr_reader :source
+      attr_reader :case_sensitive
+      attr_reader :multiline
 
-    def self.regexp(regexp, case_sensitive:, multiline:)
-      options = 0
-      options |= Regexp::IGNORECASE unless case_sensitive
-      options |= Regexp::MULTILINE if multiline
+      def initialize(source:, case_sensitive:, multiline:)
+        @source = source
+        @case_sensitive = case_sensitive
+        @multiline = multiline
+      end
 
-      new(
-        source: regexp,
-        regexp: Regexp.compile(regexp, options),
-      )
-    end
-
-    def self.token(tokens, case_sensitive:)
-      new(
-        source: tokens,
-        regexp: compile_tokens(tokens, case_sensitive: case_sensitive),
-      )
-    end
-
-    def self.compile_tokens(source, case_sensitive:)
-      tokens = []
-      s = StringScanner.new(source)
-
-      until s.eos?
-        case
-        when s.scan(/\(|\)|\{|\}|\[|\]|\<|\>/)
-          tokens << Regexp.escape(s.matched)
-        when s.scan(/\s+/)
-          tokens << '\s+'
-        when s.scan(/\w+|[\p{Letter}&&\p{^ASCII}]+/)
-          tokens << Regexp.escape(s.matched)
-        when s.scan(%r{[!"#$%&'=\-^~¥\\|`@*:+;/?.,]+})
-          tokens << Regexp.escape(s.matched.rstrip)
-        when s.scan(/./)
-          tokens << Regexp.escape(s.matched)
+      def regexp
+        @regexp ||= begin
+          options = 0
+          options |= ::Regexp::IGNORECASE unless case_sensitive
+          options |= ::Regexp::MULTILINE if multiline
+          ::Regexp.compile(source, options)
         end
       end
+    end
 
-      if tokens.first =~ /\A\p{Letter}/
-        tokens.first.prepend('\b')
+    class Token
+      attr_reader :source, :case_sensitive
+
+      def initialize(source:, case_sensitive:)
+        @case_sensitive = case_sensitive
+        @source = source
       end
 
-      if tokens.last =~ /\p{Letter}\Z/
-        tokens.last << '\b'
+      def regexp
+        @regexp ||= Token.compile_tokens(source, case_sensitive: case_sensitive)
       end
 
-      options = Regexp::MULTILINE
-      options |= Regexp::IGNORECASE unless case_sensitive
+      def self.compile_tokens(source, case_sensitive:)
+        tokens = []
+        s = StringScanner.new(source)
 
-      Regexp.new(tokens.join('\s*').gsub(/\\s\*(\\s\+\\s\*)+/, '\s+'), options)
+        until s.eos?
+          case
+          when s.scan(/\(|\)|\{|\}|\[|\]|\<|\>/)
+            tokens << ::Regexp.escape(s.matched)
+          when s.scan(/\s+/)
+            tokens << '\s+'
+          when s.scan(/\w+|[\p{Letter}&&\p{^ASCII}]+/)
+            tokens << ::Regexp.escape(s.matched)
+          when s.scan(%r{[!"#$%&'=\-^~¥\\|`@*:+;/?.,]+})
+            tokens << ::Regexp.escape(s.matched.rstrip)
+          when s.scan(/./)
+            tokens << ::Regexp.escape(s.matched)
+          end
+        end
+
+        if tokens.first =~ /\A\p{Letter}/
+          tokens.first.prepend('\b')
+        end
+
+        if tokens.last =~ /\p{Letter}\Z/
+          tokens.last << '\b'
+        end
+
+        options = ::Regexp::MULTILINE
+        options |= ::Regexp::IGNORECASE unless case_sensitive
+
+        ::Regexp.new(tokens.join('\s*').gsub(/\\s\*(\\s\+\\s\*)+/, '\s+'), options)
+      end
     end
   end
 end

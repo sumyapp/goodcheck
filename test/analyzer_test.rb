@@ -38,7 +38,7 @@ NSArray *a = [ NSMutableArray
       buffer: buffer,
       rule: new_rule(id: "rule1"),
       trigger: new_trigger {|trigger|
-        trigger.patterns << Pattern.literal("ipsum", case_sensitive: true)
+        trigger.patterns << Pattern::Literal.new(source: "ipsum", case_sensitive: true)
       }
     )
 
@@ -54,7 +54,7 @@ NSArray *a = [ NSMutableArray
       buffer: buffer,
       rule: new_rule(id: "rule1"),
       trigger: new_trigger {|trigger|
-        trigger.patterns << Pattern.literal("吾輩", case_sensitive: true)
+        trigger.patterns << Pattern::Literal.new(source: "吾輩", case_sensitive: true)
       }
     )
 
@@ -70,7 +70,7 @@ NSArray *a = [ NSMutableArray
       buffer: buffer,
       rule: new_rule(id: "rule1"),
       trigger: new_trigger {|trigger|
-        trigger.patterns << Pattern.token("[NSMutableArray new]", case_sensitive: true)
+        trigger.patterns << Pattern::Token.new(source: "[NSMutableArray new]", case_sensitive: true)
       }
     )
 
@@ -87,8 +87,8 @@ NSArray *a = [ NSMutableArray
       buffer: buffer,
       rule: new_rule(id: "rule1"),
       trigger: new_trigger {|trigger|
-        trigger.patterns << Pattern.regexp("N.Array", case_sensitive: false, multiline: false)
-        trigger.patterns << Pattern.regexp("NSAr.ay", case_sensitive: false, multiline: false)
+        trigger.patterns << Pattern::Regexp.new(source: "N.Array", case_sensitive: false, multiline: false)
+        trigger.patterns << Pattern::Regexp.new(source: "NSAr.ay", case_sensitive: false, multiline: false)
       }
     )
 
@@ -104,7 +104,7 @@ NSArray *a = [ NSMutableArray
       buffer: buffer,
       rule: new_rule(id: "rule1"),
       trigger: new_trigger {|trigger|
-        trigger.patterns << Pattern.token("Array", case_sensitive: true)
+        trigger.patterns << Pattern::Token.new(source: "Array", case_sensitive: true)
       }
     )
 
@@ -122,7 +122,7 @@ atest
         buffer: buffer,
         rule: new_rule(id: "rule1"),
         trigger: new_trigger {|trigger|
-          trigger.patterns << Pattern.regexp('(\btest\b|foo)', case_sensitive: false, multiline: false)
+          trigger.patterns << Pattern::Regexp.new(source: '(\btest\b|foo)', case_sensitive: false, multiline: false)
         }
       )
 
