@@ -7,6 +7,7 @@ class ConfigLoaderTest < Minitest::Test
   ConfigLoader = Goodcheck::ConfigLoader
   Rule = Goodcheck::Rule
   ImportLoader = Goodcheck::ImportLoader
+  Pattern = Goodcheck::Pattern
 
   def stderr
     @stderr ||= StringIO.new
@@ -453,5 +454,161 @@ EOF
         end
       end
     end
+  end
+
+  def test_var_pattern_true
+    mktmpdir do |path|
+      config_path = path + "goodcheck.yml"
+
+      loader = ConfigLoader.new(
+        path: config_path,
+        content: {
+          rules: [
+            {
+              id: "1",
+              message: "foo",
+              glob: "db/schema.rb"
+            },
+          ],
+        },
+        stderr: stderr,
+        import_loader: import_loader
+      )
+
+      pattern = loader.load_var_pattern(true)
+      assert_instance_of Pattern::Token::VarPattern, pattern
+      assert_equal [], pattern.patterns
+      refute pattern.negated
+    end
+  end
+
+  def test_var_pattern_patterns
+    mktmpdir do |path|
+      config_path = path + "goodcheck.yml"
+
+      loader = ConfigLoader.new(
+        path: config_path,
+        content: {
+          rules: [
+            {
+              id: "1",
+              message: "foo",
+              glob: "db/schema.rb"
+            },
+          ],
+        },
+        stderr: stderr,
+        import_loader: import_loader
+      )
+
+      pattern = loader.load_var_pattern(
+        [
+          "hello",
+          "/.*/",
+          "/.*a.*/mi",
+          3
+        ]
+      )
+      assert_instance_of Pattern::Token::VarPattern, pattern
+      assert_equal [
+                     "hello",
+                     /.*/,
+                     /.*a.*/mi,
+                     3
+                   ], pattern.patterns
+      refute pattern.negated
+    end
+  end
+
+  def test_var_pattern_negated
+    mktmpdir do |path|
+      config_path = path + "goodcheck.yml"
+
+      loader = ConfigLoader.new(
+        path: config_path,
+        content: {
+          rules: [
+            {
+              id: "1",
+              message: "foo",
+              glob: "db/schema.rb"
+            },
+          ],
+        },
+        stderr: stderr,
+        import_loader: import_loader
+      )
+
+      pattern = loader.load_var_pattern(
+        {
+          not: [
+            "hello",
+            "/.*/",
+            "/.*a.*/mi",
+            3
+          ]
+        }
+      )
+      assert_instance_of Pattern::Token::VarPattern, pattern
+      assert_equal [
+                     "hello",
+                     /.*/,
+                     /.*a.*/mi,
+                     3
+                   ], pattern.patterns
+      assert pattern.negated
+    end
+  end
+
+  def test_token_pattern_with_vars
+    mktmpdir do |path|
+      config_path = path + "goodcheck.yml"
+
+      loader = ConfigLoader.new(
+        path: config_path,
+        content: {
+          rules: [
+            {
+              id: "1",
+              message: "foo",
+              glob: "db/schema.rb"
+            },
+          ],
+        },
+        stderr: stderr,
+        import_loader: import_loader
+      )
+
+      pattern = loader.load_pattern(
+        {
+          token: "bgcolor={${color:string}}",
+          where: {
+            color: {
+              not: [
+                "pink"
+              ]
+            }
+          }
+        }
+      )
+
+      assert_instance_of Pattern::Token, pattern
+      assert_equal /\bbgcolor\s*=\s*\{\s*(?-mix:(?-mix:"(?<color>(?:[^"]|\")*)")|(?-mix:'(?<color>(?:[^']|\')*)'))\s*\}/m, pattern.regexp
+      assert_equal [:color], pattern.variables.keys
+      pattern.variables[:color].tap do |color|
+        assert_equal ["pink"], color.patterns
+        assert color.negated
+      end
+    end
+  end
+
+  def test_token_pattern_types
+    where = ConfigLoader::Schema.where
+
+    assert_match(where, {})
+    assert_match(where, { color: true })
+    assert_match(where, { color: "pink" })
+    assert_match(where, { size: [1,2,3] })
+    assert_match(where, { color: { not: [1,2,3] } })
   end
 end

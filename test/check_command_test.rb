@@ -244,6 +244,44 @@ MSG
     end
   end
 
+  def test_token_variable_match
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: foo
+    message: Foo
+    pattern: 
+      - token: "background-color: ${color:word};"
+        where:
+          color: 
+            - /ink/
+            - gray
+EOF
+
+      builder.file name: Pathname("hello.css"), content: <<EOF
+div.icon {
+  background-color: white;
+}
+
+div.size {
+  background-color: pink;
+}
+EOF
+
+      builder.cd do
+        reporter = Reporters::Text.new(stdout: stdout)
+        check = Check.new(config_path: builder.config_path.basename, rules: [], targets: [Pathname(".")], reporter: reporter, stderr: stderr, force_download: false, home_path: builder.path + "home")
+
+        result = check.run
+
+        assert_equal 2, result
+        assert_equal <<MSG, stdout.string
+hello.css:6:  background-color: pink;:\tFoo
+MSG
+      end
+    end
+  end
+
   def test_no_match
     TestCaseBuilder.tmpdir do |builder|
       builder.config content: <<EOF
