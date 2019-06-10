@@ -153,6 +153,30 @@ It accepts one optional attribute `case_sensitive`.
 The default value of `case_sensitive` is `true`.
 Note that the generated regexp is in multiline mode.
 
+Token pattern can have optional `where` attribute and *variable bindings*.
+
+```yaml
+pattern:
+  - token: bgcolor=${color:string}
+    where:
+      color: true
+```
+
+The variable binding consists of *variable name* and *variable type*, where `color` and `string` in the example above respectively. You have to add a key of the *variable name* in `where` attribute.
+
+We have 8 builtin patterns:
+
+* `string`
+* `int`
+* `float`
+* `number`
+* `url`
+* `email`
+* `word`
+* `identifier`
+
+You can find the exact definitions of the types in the definition of `Goodcheck::Pattern::Token` (`@@TYPES`).
+
 ### *glob*
 
 A *glob* can be a string, or a hash.
