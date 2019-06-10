@@ -38,7 +38,7 @@ NSArray *a = [ NSMutableArray
       buffer: buffer,
       rule: new_rule(id: "rule1"),
       trigger: new_trigger {|trigger|
-        trigger.patterns << Pattern.literal("ipsum", case_sensitive: true)
+        trigger.patterns << Pattern::Literal.new(source: "ipsum", case_sensitive: true)
       }
     )
 
@@ -54,7 +54,7 @@ NSArray *a = [ NSMutableArray
       buffer: buffer,
       rule: new_rule(id: "rule1"),
       trigger: new_trigger {|trigger|
-        trigger.patterns << Pattern.literal("吾輩", case_sensitive: true)
+        trigger.patterns << Pattern::Literal.new(source: "吾輩", case_sensitive: true)
       }
     )
 
@@ -70,7 +70,9 @@ NSArray *a = [ NSMutableArray
       buffer: buffer,
       rule: new_rule(id: "rule1"),
       trigger: new_trigger {|trigger|
-        trigger.patterns << Pattern.token("[NSMutableArray new]", case_sensitive: true)
+        trigger.patterns << Pattern::Token.new(source: "[NSMutableArray new]",
+                                               variables: {},
+                                               case_sensitive: true)
       }
     )
 
@@ -82,13 +84,112 @@ NSArray *a = [ NSMutableArray
     assert_equal [Location.new(start_line: 6, start_column: 13, end_line: 7, end_column: 20)], issues.map(&:location)
   end
 
+  def test_analyzer_tokens_var
+    buffer = Buffer.new(path: Pathname("foo.txt"), content: <<-EOF)
+div {
+  background-color: white;
+}
+
+div {
+  background-color: $pallet.secondary;
+}
+    EOF
+    analyzer = Analyzer.new(
+      buffer: buffer,
+      rule: new_rule(id: "rule1"),
+      trigger: new_trigger {|trigger|
+        trigger.patterns << Pattern::Token.new(
+          source: "background-color: ${color:word};",
+          variables: {
+            color: Pattern::Token::VarPattern.new(
+              patterns: [
+                "$pallet.main",
+                "$pallet.secondary"
+              ],
+              negated: true
+            )
+          },
+          case_sensitive: true
+        )
+      }
+    )
+
+    issues = analyzer.scan.to_a
+
+    assert_equal ["rule1"], issues.map(&:rule).map(&:id)
+    assert_equal ["background-color: white;"], issues.map(&:text)
+    assert_equal [Location.new(start_line: 2, start_column: 2, end_line: 2, end_column: 26)], issues.map(&:location)
+  end
+
+  def test_analyzer_tokens_var2
+    buffer = Buffer.new(path: Pathname("foo.txt"), content: <<-EOF)
+div.icon {
+  margin-top: 30px;
+}
+
+div.title {
+  margin-top: $space-big;
+}
+    EOF
+    analyzer = Analyzer.new(
+      buffer: buffer,
+      rule: new_rule(id: "rule1"),
+      trigger: new_trigger {|trigger|
+        trigger.patterns << Pattern::Token.new(
+          source: "margin-top: ${size:int}px;",
+          variables: {
+            size: Pattern::Token::VarPattern.new(
+              patterns: [],
+              negated: false
+            )
+          },
+          case_sensitive: true
+        )
+      }
+    )
+
+    issues = analyzer.scan.to_a
+
+    assert_equal ["rule1"], issues.map(&:rule).map(&:id)
+    assert_equal ["margin-top: 30px;"], issues.map(&:text)
+    assert_equal [Location.new(start_line: 2, start_column: 2, end_line: 2, end_column: 19)], issues.map(&:location)
+  end
+
+  def test_analyzer_tokens_var3
+    buffer = Buffer.new(path: Pathname("foo.txt"), content: <<-EOF)
+@charset "euc-jp";
+    EOF
+    analyzer = Analyzer.new(
+      buffer: buffer,
+      rule: new_rule(id: "rule1"),
+      trigger: new_trigger(negated: true) {|trigger|
+        trigger.patterns << Pattern::Token.new(
+          source: "@charset ${set:string};",
+          variables: {
+            size: Pattern::Token::VarPattern.new(
+              patterns: [/utf-8/i],
+              negated: false
+            )
+          },
+          case_sensitive: true
+        )
+      }
+    )
+
+    issues = analyzer.scan.to_a
+
+    assert_equal ["rule1"], issues.map(&:rule).map(&:id)
+    assert_equal [nil], issues.map(&:text)
+    assert_equal [nil], issues.map(&:location)
+  end
+
   def test_analyzer_no_duplicate
     analyzer = Analyzer.new(
       buffer: buffer,
       rule: new_rule(id: "rule1"),
       trigger: new_trigger {|trigger|
-        trigger.patterns << Pattern.regexp("N.Array", case_sensitive: false, multiline: false)
-        trigger.patterns << Pattern.regexp("NSAr.ay", case_sensitive: false, multiline: false)
+        trigger.patterns << Pattern::Regexp.new(source: "N.Array", case_sensitive: false, multiline: false)
+        trigger.patterns << Pattern::Regexp.new(source: "NSAr.ay", case_sensitive: false, multiline: false)
       }
     )
 
@@ -104,7 +205,7 @@ NSArray *a = [ NSMutableArray
       buffer: buffer,
       rule: new_rule(id: "rule1"),
       trigger: new_trigger {|trigger|
-        trigger.patterns << Pattern.token("Array", case_sensitive: true)
+        trigger.patterns << Pattern::Token.new(source: "Array", variables: {}, case_sensitive: true)
       }
     )
 
@@ -122,7 +223,7 @@ atest
         buffer: buffer,
         rule: new_rule(id: "rule1"),
         trigger: new_trigger {|trigger|
-          trigger.patterns << Pattern.regexp('(\btest\b|foo)', case_sensitive: false, multiline: false)
+          trigger.patterns << Pattern::Regexp.new(source: '(\btest\b|foo)', case_sensitive: false, multiline: false)
         }
       )
 

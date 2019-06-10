@@ -35,9 +35,36 @@ module Goodcheck
                           })
       let :glob, array_or(one_glob)
 
+      let :var_pattern, any
+      let :variable_pattern, array_or(var_pattern)
+      let :negated_variable_pattern, object(not: variable_pattern)
+
+      let :where, hash(
+        enum(
+          variable_pattern,
+          negated_variable_pattern,
+          literal(true),
+          detector: -> (value) {
+            case
+            when value.is_a?(Hash) && value.key?(:not)
+              negated_variable_pattern
+            when value == true
+              literal(true)
+            else
+              variable_pattern
+            end
+          }
+        )
+      )
+
       let :regexp_pattern, object(regexp: string, case_sensitive: boolean?, multiline: boolean?, glob: optional(glob))
       let :literal_pattern, object(literal: string, case_sensitive: boolean?, glob: optional(glob))
-      let :token_pattern, object(token: string, case_sensitive: boolean?, glob: optional(glob))
+      let :token_pattern, object(
+        token: string,
+        case_sensitive: boolean?,
+        glob: optional(glob),
+        where: optional(where)
+      )
 
       let :pattern, enum(regexp_pattern,
                          literal_pattern,
@@ -327,7 +354,7 @@ module Goodcheck
     def load_pattern(pattern)
       case pattern
       when String
-        Pattern.literal(pattern, case_sensitive: true)
+        Pattern::Literal.new(source: pattern, case_sensitive: true)
       when Hash
         if pattern[:glob]
           print_warning_once "🌏 Pattern with glob is deprecated: globs are ignored at all."
@@ -337,18 +364,60 @@ module Goodcheck
         when pattern[:literal]
           cs = case_sensitive?(pattern)
           literal = pattern[:literal]
-          Pattern.literal(literal, case_sensitive: cs)
+          Pattern::Literal.new(source: literal, case_sensitive: cs)
         when pattern[:regexp]
           regexp = pattern[:regexp]
           cs = case_sensitive?(pattern)
           multiline = pattern[:multiline]
-          Pattern.regexp(regexp, case_sensitive: cs, multiline: multiline)
+          Pattern::Regexp.new(source: regexp, case_sensitive: cs, multiline: multiline)
         when pattern[:token]
           tok = pattern[:token]
           cs = case_sensitive?(pattern)
-          Pattern.token(tok, case_sensitive: cs)
+          Pattern::Token.new(source: tok, variables: load_token_vars(pattern[:where]), case_sensitive: cs)
         end
       end
+    end
+
+    def load_token_vars(pattern)
+      case pattern
+      when Hash
+        pattern.each.with_object({}) do |(key, value), hash|
+          hash[key.to_sym] = load_var_pattern(value)
+        end
+      else
+        {}
+      end
+    end
+
+    def load_var_pattern(pattern)
+      if pattern.is_a?(Hash) && pattern[:not]
+        negated = true
+        pattern = pattern[:not]
+      else
+        negated = false
+      end
+
+      pattern = [] if pattern == true
+
+      patterns = array(pattern).map do |pat|
+        case pat
+        when String
+          if pat =~ /\A\/(.*)\/([im]*)\Z/
+            source = $1
+            opts = $2
+            options = 0
+            options |= ::Regexp::IGNORECASE if opts =~ /i/
+            options |= ::Regexp::MULTILINE if opts =~ /m/
+            ::Regexp.new(source, options)
+          else
+            pat
+          end
+        else
+          pat
+        end
+      end
+
+      Pattern::Token::VarPattern.new(patterns: patterns, negated: negated)
     end
 
     def case_sensitive?(pattern)
