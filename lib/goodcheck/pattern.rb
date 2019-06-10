@@ -19,10 +19,11 @@ module Goodcheck
       attr_reader :case_sensitive
       attr_reader :multiline
 
-      def initialize(source:, case_sensitive:, multiline:)
+      def initialize(source:, case_sensitive:, multiline:, regexp: nil)
         @source = source
         @case_sensitive = case_sensitive
         @multiline = multiline
+        @regexp = regexp
       end
 
       def regexp

@@ -354,7 +354,15 @@ module Goodcheck
     def load_pattern(pattern)
       case pattern
       when String
-        Pattern::Literal.new(source: pattern, case_sensitive: true)
+        case (pat = load_string_pattern(pattern))
+        when String
+          Pattern::Literal.new(source: pat, case_sensitive: true)
+        when ::Regexp
+          Pattern::Regexp.new(source: pattern,
+                              regexp: pat,
+                              multiline: pat.multiline?,
+                              case_sensitive: !pat.casefold?)
+        end
       when Hash
         if pattern[:glob]
           print_warning_once "🌏 Pattern with glob is deprecated: globs are ignored at all."
@@ -375,6 +383,19 @@ module Goodcheck
           cs = case_sensitive?(pattern)
           Pattern::Token.new(source: tok, variables: load_token_vars(pattern[:where]), case_sensitive: cs)
         end
+      end
+    end
+
+    def load_string_pattern(string)
+      if string =~ /\A\/(.*)\/([im]*)\Z/
+        source = $1
+        opts = $2
+        options = 0
+        options |= ::Regexp::IGNORECASE if opts =~ /i/
+        options |= ::Regexp::MULTILINE if opts =~ /m/
+        ::Regexp.new(source, options)
+      else
+        string
       end
     end
 
@@ -402,16 +423,7 @@ module Goodcheck
       patterns = array(pattern).map do |pat|
         case pat
         when String
-          if pat =~ /\A\/(.*)\/([im]*)\Z/
-            source = $1
-            opts = $2
-            options = 0
-            options |= ::Regexp::IGNORECASE if opts =~ /i/
-            options |= ::Regexp::MULTILINE if opts =~ /m/
-            ::Regexp.new(source, options)
-          else
-            pat
-          end
+          load_string_pattern(pat)
         else
           pat
         end
