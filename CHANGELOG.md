@@ -2,6 +2,11 @@
 
 ## master
 
+## 2.1.0 (2019-06-10)
+
+* Introduce regexp string pattern [#56](https://github.com/sider/goodcheck/pull/56)
+* Introduce variable binding token pattern [#55](https://github.com/sider/goodcheck/pull/55)
+
 ## 2.0.0 (2019-06-06)
 
 * Introduce trigger, a new pattern definition [#53](https://github.com/sider/goodcheck/pull/53)
