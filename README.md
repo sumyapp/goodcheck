@@ -77,7 +77,19 @@ The *rule* hash contains the following keys.
 ### *pattern*
 
 A *pattern* can be a *literal pattern*, *regexp pattern*, *token pattern*, or a string.
-When a string is given, it is interpreted as a *literal pattern* with `case_sensitive: true`.
+
+#### String literal
+
+String literal represents a *literal pattern* or *regexp pattern*.
+
+```yaml
+pattern:
+  - This is literal pattern
+  - /This is regexp pattern/
+```
+
+If the string value begins with `/` and ends with `/`, it is a *regexp pattern*.
+You can optionally specify regexp options like `/casefold/i` or `/multiline/m`.
 
 #### *literal pattern*
 
