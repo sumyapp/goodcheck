@@ -47,6 +47,18 @@ class ConfigLoaderTest < Minitest::Test
     assert_pattern pattern, regexp: /foo\.bar/, source: "foo.bar"
   end
 
+  def test_load_pattern_string_regexp
+    loader = config_loader()
+
+    loader.load_pattern("/hello/").tap do |pattern|
+      assert_pattern pattern, regexp: /hello/, source: "/hello/"
+    end
+
+    loader.load_pattern("/hello/mi").tap do |pattern|
+      assert_pattern pattern, regexp: /hello/mi, source: "/hello/mi"
+    end
+  end
+
   def test_load_literal_pattern_hash_ci
     loader = config_loader()
     pattern = loader.load_pattern({ literal: "foo.bar", case_insensitive: true })
