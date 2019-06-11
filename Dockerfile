@@ -1,4 +1,4 @@
-FROM ruby:2.5.0-stretch
+FROM ruby:2.6.3
 
 ENV DEBIAN_FRONTEND=noninteractive
 
