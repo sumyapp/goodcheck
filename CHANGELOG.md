@@ -2,6 +2,10 @@
 
 ## master
 
+## 2.1.1 (2019-06-11)
+
+* Let `:int` variable match with `0`
+
 ## 2.1.0 (2019-06-10)
 
 * Introduce regexp string pattern [#56](https://github.com/sider/goodcheck/pull/56)
