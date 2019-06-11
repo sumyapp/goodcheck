@@ -77,6 +77,11 @@ class PatternTest < Minitest::Test
     regexp.match('hello world').tap do |match|
       refute match
     end
+
+    regexp.match("0").tap do |match|
+      assert match
+      assert_equal "0", match[:color]
+    end
   end
 
   def test_tokenize_variable_float
