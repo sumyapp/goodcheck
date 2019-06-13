@@ -623,4 +623,16 @@ EOF
     assert_match(where, { size: [1,2,3] })
     assert_match(where, { color: { not: [1,2,3] } })
   end
+
+  def test_config_no_rules
+    loader = ConfigLoader.new(
+      path: Pathname("hello.yml"),
+      content: {},
+      stderr: stderr,
+      import_loader: import_loader
+    )
+
+    config = loader.load
+    assert_empty config.rules
+  end
 end

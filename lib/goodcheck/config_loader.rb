@@ -191,7 +191,7 @@ module Goodcheck
       let :exclude, array_or(string)
 
       let :config, object(
-        rules: rules,
+        rules: optional(rules),
         import: optional(imports),
         exclude: optional(exclude)
       )
@@ -218,7 +218,7 @@ module Goodcheck
 
         rules = []
 
-        load_rules(rules, content[:rules])
+        load_rules(rules, array(content[:rules]))
 
         Array(content[:import]).each do |import|
           load_import rules, import
