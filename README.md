@@ -277,7 +277,6 @@ If your `pattern` definition includes `glob`, swithing `trigger` would make sens
 `goodcheck.yml` can have optional `import` attribute.
 
 ```yaml
-rules: []
 import:
   - /usr/share/goodcheck/rules.yml
   - lib/goodcheck/rules.yml
@@ -297,7 +296,6 @@ The rules file is a YAML file with array of rules.
 `goodcheck.yml` can have optional `exclude` attribute.
 
 ```yaml
-rules: []
 exclude:
   - node_modules
   - vendor

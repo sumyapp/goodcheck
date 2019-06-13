@@ -2,6 +2,10 @@
 
 ## master
 
+## 2.1.2 (2019-06-14)
+
+* Let `rules` in configuration be optional
+
 ## 2.1.1 (2019-06-11)
 
 * Let `:int` variable match with `0`
