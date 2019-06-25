@@ -73,12 +73,19 @@ module Goodcheck
         def test(str)
           return true if patterns.empty?
 
-          value = cast(str)
-
           unless negated
-            patterns.any? {|pattern| pattern === value }
+            patterns.any? {|pattern| test2(pattern, str) }
           else
-            patterns.none? {|pattern| pattern === value }
+            patterns.none? {|pattern| test2(pattern, str) }
+          end
+        end
+
+        def test2(pattern, str)
+          case pattern
+          when Numeric
+            pattern == cast(str)
+          else
+            pattern === str
           end
         end
 

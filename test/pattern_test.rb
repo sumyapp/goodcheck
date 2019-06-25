@@ -218,5 +218,11 @@ class PatternTest < Minitest::Test
       assert pat.test("455")
       refute pat.test("123")
     end
+
+    Token::VarPattern.new(patterns: [/\A4./], negated: false).tap do |pat|
+      pat.type = :number
+      assert pat.test("455")
+      refute pat.test("123")
+    end
   end
 end
