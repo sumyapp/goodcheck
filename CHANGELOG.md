@@ -2,6 +2,10 @@
 
 ## master
 
+## 2.2.0 (2019-06-25)
+
+* Allow testing numeric variables with regexp
+
 ## 2.1.2 (2019-06-14)
 
 * Let `rules` in configuration be optional
