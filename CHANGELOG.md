@@ -2,6 +2,10 @@
 
 ## master
 
+## 2.3.0 (2019-07-02)
+
+* Fix Docker image [#58](https://github.com/sider/goodcheck/pull/58)
+
 ## 2.2.0 (2019-06-25)
 
 * Allow testing numeric variables with regexp
