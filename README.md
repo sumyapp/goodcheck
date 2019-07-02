@@ -164,7 +164,7 @@ pattern:
 
 The variable binding consists of *variable name* and *variable type*, where `color` and `string` in the example above respectively. You have to add a key of the *variable name* in `where` attribute.
 
-We have 8 builtin patterns:
+We have 8 built-in patterns:
 
 * `string`
 * `int`
@@ -270,7 +270,7 @@ rules:
 ```
 
 You can continue existing `pattern` definitions, but `goodcheck test` against `pattern`s with `glob` does not work.
-If your `pattern` definition includes `glob`, swithing `trigger` would make sense.
+If your `pattern` definition includes `glob`, switching `trigger` would make sense.
 
 ## Importing rules
 
@@ -368,15 +368,18 @@ The cache expires in 3 minutes.
 
 ## Docker Images
 
-You can use [Docker images](https://hub.docker.com/r/sider/goodcheck/) to use Goodcheck.
-For example:
+We provide Docker images of Goodcheck so that you can try Goodcheck without installing them.
+Pick a version of Goodcheck from images page.
+
+- https://hub.docker.com/r/sider/goodcheck/
 
 ```bash
-$ docker pull sider/goodcheck
-
-$ cd /path/to/your/project
-$ docker run -it --rm -v "$(pwd):/work" sider/goodcheck goodcheck check
+$ docker pull sider/goodcheck:2.3.0
+$ docker run -t --rm -v "$(pwd):/work" sider/goodcheck:2.3.0 check
 ```
+
+We don't recommend using `latest` tag.
+It updates every time we push a commit to `master` branch, and may include a version which is not ready for publish.
 
 ## Development
 

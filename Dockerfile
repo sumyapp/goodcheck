@@ -19,3 +19,5 @@ RUN bundle install && bundle exec rake install
 
 RUN mkdir /work
 WORKDIR /work
+
+ENTRYPOINT ["bundle", "exec", "goodcheck"]
