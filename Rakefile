@@ -11,6 +11,6 @@ task :default => :test
 
 namespace :docker do
   task :build do
-    sh 'docker', 'build', '-t', 'goodcheck:latest', '.'
+    sh 'docker', 'build', '-t', 'sider/goodcheck:dev', '.'
   end
 end
