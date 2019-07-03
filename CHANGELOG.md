@@ -2,6 +2,8 @@
 
 ## master
 
+* Fix Docker image [#59](https://github.com/sider/goodcheck/pull/59)
+
 ## 2.3.0 (2019-07-02)
 
 * Fix Docker image [#58](https://github.com/sider/goodcheck/pull/58)
