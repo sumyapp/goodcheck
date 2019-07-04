@@ -369,17 +369,16 @@ The cache expires in 3 minutes.
 ## Docker Images
 
 We provide Docker images of Goodcheck so that you can try Goodcheck without installing them.
-Pick a version of Goodcheck from images page.
 
 - https://hub.docker.com/r/sider/goodcheck/
 
 ```bash
-$ docker pull sider/goodcheck:2.3.1
-$ docker run -t --rm -v "$(pwd):/work" sider/goodcheck:2.3.1 check
+$ docker pull sider/goodcheck
+$ docker run -t --rm -v "$(pwd):/work" sider/goodcheck check
 ```
 
-We don't recommend using `latest` tag.
-It updates every time we push a commit to `master` branch, and may include a version which is not ready for publish.
+The default `latest` tag points to the latest release of Goodcheck.
+You can pick a version of Goodcheck from [tags page](https://hub.docker.com/r/sider/goodcheck/tags).
 
 ## Development
 
