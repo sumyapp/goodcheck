@@ -162,12 +162,43 @@ module Goodcheck
         /\b(?<#{name}>#{AUTO_EMAIL_RE})/
       }
 
-      def self.regexp_for_type(name:, type:)
-        ty = type || :word
-        if @@TYPES.key?(ty)
-          @@TYPES[ty][name]
+      def self.expand(prefix, suffix, depth: 5)
+        if depth == 0
+          [
+            /[^#{suffix}]*/
+          ]
+        else
+          expandeds = expand(prefix, suffix, depth: depth - 1)
+          [/[^#{prefix}#{suffix}]*#{prefix}#{expandeds.first}#{suffix}[^#{prefix}#{suffix}]*/] + expandeds
         end
       end
+
+      def self.regexp_for_type(name:, type:, scanner:)
+        prefix = scanner.pre_match[-1]
+        suffix = scanner.check(WORD_RE) || scanner.peek(1)
+
+        case
+        when type == :__
+          body = case
+                 when prefix == "{" && suffix == "}"
+                   ::Regexp.union(expand(prefix, suffix))
+                 when prefix == "(" && suffix == ")"
+                   ::Regexp.union(expand(prefix, suffix))
+                 when prefix == "[" && suffix == "]"
+                   ::Regexp.union(expand(prefix, suffix))
+                 when prefix == "<" && suffix == ">"
+                   ::Regexp.union(expand(prefix, suffix))
+                 else
+                   /(?~#{::Regexp.escape(suffix)})/
+                 end
+          /(?<#{name}>#{body})/
+
+        when @@TYPES.key?(type)
+          @@TYPES[type][name]
+        end
+      end
+
+      WORD_RE = /\w+|[\p{L}&&\p{^ASCII}]+/
 
       def self.compile_tokens(source, variables, case_sensitive:)
         tokens = []
@@ -177,15 +208,17 @@ module Goodcheck
           case
           when s.scan(/\${(?<name>[a-zA-Z_]\w*)(?::(?<type>#{::Regexp.union(*@@TYPES.keys.map(&:to_s))}))?}/)
             name = s[:name].to_sym
-            type = s[:type] && s[:type].to_sym
+            type = s[:type] ? s[:type].to_sym : :__
 
             if variables.key?(name)
+              tokens << :nobr
               variables[name].type = type
-              regexp = regexp_for_type(name: name, type: type).to_s
+              regexp = regexp_for_type(name: name, type: type, scanner: s).to_s
               if tokens.empty? && (type == :word || type == :identifier)
                 regexp = /\b#{regexp.to_s}/
               end
               tokens << regexp.to_s
+              tokens << :nobr
             else
               tokens << ::Regexp.escape("${")
               tokens << ::Regexp.escape(name.to_s)
@@ -195,7 +228,7 @@ module Goodcheck
             tokens << ::Regexp.escape(s.matched)
           when s.scan(/\s+/)
             tokens << '\s+'
-          when s.scan(/\w+|[\p{L}&&\p{^ASCII}]+/)
+          when s.scan(WORD_RE)
             tokens << ::Regexp.escape(s.matched)
           when s.scan(%r{[!"#%&'=\-^~¥\\|`@*:+;/?.,]+})
             tokens << ::Regexp.escape(s.matched.rstrip)
@@ -204,18 +237,32 @@ module Goodcheck
           end
         end
 
-        if tokens.first =~ /\A\p{L}/
+        if source[0] =~ /\p{L}/
           tokens.first.prepend('\b')
         end
 
-        if tokens.last =~ /\p{L}\Z/
+        if source[-1] =~ /\p{L}/
           tokens.last << '\b'
         end
 
         options = ::Regexp::MULTILINE
         options |= ::Regexp::IGNORECASE unless case_sensitive
 
-        ::Regexp.new(tokens.join('\s*').gsub(/\\s\*(\\s\+\\s\*)+/, '\s+'), options)
+        buf, skip = tokens[0].is_a?(String) ? [tokens[0], false] : ["", true]
+        tokens.drop(1).each do |tok|
+          if tok == :nobr
+            skip = true
+          else
+            buf << '\s*' unless skip
+            skip = false
+            buf << tok
+          end
+        end
+
+        ::Regexp.new(buf.
+          gsub(/\\s\*(\\s\+\\s\*)+/, '\s+').
+          gsub(/#{::Regexp.escape('\s+\s*')}/, '\s+').
+          gsub(/#{::Regexp.escape('\s*\s+')}/, '\s+'), options)
       end
     end
   end
