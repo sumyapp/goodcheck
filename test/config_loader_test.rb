@@ -605,7 +605,7 @@ EOF
       )
 
       assert_instance_of Pattern::Token, pattern
-      assert_equal /\bbgcolor\s*=\s*\{\s*(?-mix:(?-mix:"(?<color>(?:[^"]|\")*)")|(?-mix:'(?<color>(?:[^']|\')*)'))\s*\}/m, pattern.regexp
+      assert_equal /\bbgcolor\s*=\s*\{(?-mix:(?-mix:"(?<color>(?:[^"]|\")*)")|(?-mix:'(?<color>(?:[^']|\')*)'))\}/m, pattern.regexp
       assert_equal [:color], pattern.variables.keys
       pattern.variables[:color].tap do |color|
         assert_equal ["pink"], color.patterns

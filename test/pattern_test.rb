@@ -128,7 +128,7 @@ class PatternTest < Minitest::Test
     end
 
     Token.compile_tokens("${color:word} foo", { color: Token::VarPattern.empty }, case_sensitive: true).tap do |regexp|
-      assert_equal /(?-mix:\b(?-mix:(?<color>\S+)))\s+foo\b/m, regexp
+      assert_equal /(?-mix:(?<color>\S+))\s+foo\b/m, regexp
     end
   end
 
@@ -199,6 +199,59 @@ class PatternTest < Minitest::Test
     assert_match pattern.regexp, "bgcolor='white'"
     assert_match pattern.regexp, 'bgcolor="pink"'
     refute_match pattern.regexp, 'bgcolor={gray}'
+  end
+
+  def test_tokens_no_type_word
+    pattern = Token.new(source: "margin: ${size}px;", variables: { size: Token::VarPattern.empty }, case_sensitive: true)
+
+    pattern.regexp.match("div { margin: 120px; }").tap do |match|
+      assert match
+      assert_equal "120", match[:size]
+    end
+
+    pattern.regexp.match("div { margin: <%= size %>px; }").tap do |match|
+      assert match
+      assert_equal "<%= size %>", match[:size]
+    end
+
+    pattern.regexp.match("div { margin: <%= pic.size %>px; }").tap do |match|
+      assert match
+      assert_equal "<%= pic.size %>", match[:size]
+    end
+  end
+
+  def test_tokens_no_type_word_head
+    pattern = Token.new(source: "${size}px;", variables: { size: Token::VarPattern.empty }, case_sensitive: true)
+
+    pattern.regexp.match("div { margin: 120px; }").tap do |match|
+      assert match
+      # This should be different from what the user wants.
+      assert_equal "div { margin: 120", match[:size]
+    end
+  end
+
+  def test_tokens_no_type_paren
+    pattern = Token.new(source: "bgcolor={${color}}", variables: { color: Token::VarPattern.empty }, case_sensitive: true)
+
+    pattern.regexp.match("<tag bgcolor={color(pink, red)}>Hello world</tag>").tap do |match|
+      assert match
+      assert_equal "color(pink, red)", match[:color]
+    end
+    pattern.regexp.match("<tag bgcolor='white'>Hello world</tag>").tap do |match|
+      refute match
+    end
+    pattern.regexp.match("<tag bgcolor={ { blue: 123, green: 234, red: 13 } }>Hello world</tag>").tap do |match|
+      assert match
+      assert_equal " { blue: 123, green: 234, red: 13 } ", match[:color]
+    end
+    pattern.regexp.match("<tag bgcolor={ { blue: 123, green: { hello: world() }, red: 13 } }>Hello world</tag>").tap do |match|
+      assert match
+      assert_equal " { blue: 123, green: { hello: world() }, red: 13 } ", match[:color]
+    end
+    pattern.regexp.match("<tag bgcolor={ 0{1{2{3{4{5{6}5}4}3}2}1}0 }>Hello world</tag>").tap do |match|
+      assert match
+      assert_equal " 0{1{2{3{4{5{6}5}4}3}2}1", match[:color]
+    end
   end
 
   def test_var_pattern
