@@ -189,7 +189,11 @@ module Goodcheck
                  when prefix == "<" && suffix == ">"
                    ::Regexp.union(expand(prefix, suffix))
                  else
-                   /(?~#{::Regexp.escape(suffix)})/
+                   unless suffix.empty?
+                     /(?~#{::Regexp.escape(suffix)})/
+                   else
+                     /.*/
+                   end
                  end
           /(?<#{name}>#{body})/
 
@@ -211,6 +215,13 @@ module Goodcheck
             type = s[:type] ? s[:type].to_sym : :__
 
             if variables.key?(name)
+              if !s[:type] && s.pre_match == ""
+                Goodcheck.logger.error "Variable binding ${#{name}} at the beginning of pattern would cause an unexpected match"
+              end
+              if !s[:type] && s.peek(1) == ""
+                Goodcheck.logger.error "Variable binding ${#{name}} at the end of pattern would cause an unexpected match"
+              end
+
               tokens << :nobr
               variables[name].type = type
               regexp = regexp_for_type(name: name, type: type, scanner: s).to_s

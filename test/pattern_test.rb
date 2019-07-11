@@ -230,6 +230,16 @@ class PatternTest < Minitest::Test
     end
   end
 
+  def test_tokens_no_type_word_tail
+    pattern = Token.new(source: "background-color: ${color}", variables: { color: Token::VarPattern.empty }, case_sensitive: true)
+
+    pattern.regexp.match("div { background-color: pink; margin-left: 20px; }").tap do |match|
+      assert match
+      # This should be different from what the user wants.
+      assert_equal "pink; margin-left: 20px; }", match[:color]
+    end
+  end
+
   def test_tokens_no_type_paren
     pattern = Token.new(source: "bgcolor={${color}}", variables: { color: Token::VarPattern.empty }, case_sensitive: true)
 
