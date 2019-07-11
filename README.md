@@ -352,12 +352,21 @@ The test contains:
 
 Use `test` command when you add new rule to be sure you are writing rules correctly.
 
-Available options is:
+Available options are:
 
 * `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file.
 * `-v`, `--verbose` to be verbose.
 * `--debug` to print all debug messages.
 * `--force` to ignore downloaded caches
+
+### `goodcheck pattern [options] ids...`
+
+The `pattern` command prints the regular expressions generated from the patterns.
+The command is for debugging patterns, especially token patterns.
+
+Available option is:
+
+* `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file.
 
 ## Downloaded rules
 

@@ -16,6 +16,7 @@ module Goodcheck
       init: "Generate a sample configuration file",
       check: "Run check with a configuration",
       test: "Test your configuration",
+      pattern: "Print regexp for rules",
       version: "Print version",
       help: "Show goodcheck version and quit"
     }
@@ -160,6 +161,18 @@ module Goodcheck
         stdout.puts "  goodcheck #{c}\t#{msg}"
       end
       0
+    end
+
+    def pattern(args)
+      config_path = Pathname("goodcheck.yml")
+
+      OptionParser.new("Usage: goodcheck pattern [options] ids...") do |opts|
+        opts.on("-c CONFIG", "--config=CONFIG") do |config|
+          config_path = Pathname(config)
+        end
+      end.parse!(args)
+
+      Commands::Pattern.new(stdout: stdout, stderr: stderr, path: config_path, ids: Set.new(args), home_path: home_path).run
     end
   end
 end

@@ -225,4 +225,48 @@ EOF
       assert_match %r(app/views/welcome/index\.html\.erb), stdout
     end
   end
+
+  def test_pattern
+    TestCaseBuilder.tmpdir do |builder|
+      builder.config content: <<EOF
+rules:
+  - id: sample.foo
+    message: Foo
+    pattern:
+      - foo
+    glob:
+      - "app/models/**/*.rb"
+  - id: sample.bar
+    message: Bar
+    pattern:
+      - regexp: bar
+        case_insensitive: true
+    glob: "**/*.html.erb"
+EOF
+
+      stdout, _, status = shell(goodcheck, "pattern", chdir: builder.path)
+
+      assert status.success?
+      assert_match "sample.foo", stdout
+      assert_match "sample.bar", stdout
+
+      stdout, _, status = shell(goodcheck, "pattern", "sample.foo", chdir: builder.path)
+
+      assert status.success?
+      assert_match "sample.foo", stdout
+      refute_match "sample.bar", stdout
+
+      stdout, _, status = shell(goodcheck, "pattern", "sample", chdir: builder.path)
+
+      assert status.success?
+      assert_match "sample.foo", stdout
+      assert_match "sample.bar", stdout
+
+      stdout, _, status = shell(goodcheck, "pattern", "foo", chdir: builder.path)
+
+      assert status.success?
+      refute_match "sample.foo", stdout
+      refute_match "sample.bar", stdout
+    end
+  end
 end
