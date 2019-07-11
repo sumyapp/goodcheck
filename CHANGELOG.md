@@ -2,6 +2,11 @@
 
 ## master
 
+## 2.4.0 (2019-07-11)
+
+* Add `pattern` command to print regexp of patterns [#63](https://github.com/sider/goodcheck/pull/63)
+* Fix variable pattern without a type [#62](https://github.com/sider/goodcheck/pull/62)
+
 ## 2.3.2 (2019-07-04)
 
 * Update README

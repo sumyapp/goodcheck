@@ -177,6 +177,26 @@ We have 8 built-in patterns:
 
 You can find the exact definitions of the types in the definition of `Goodcheck::Pattern::Token` (`@@TYPES`).
 
+You can omit the type of a variable binding.
+
+```yaml
+pattern:
+  - token: margin-left: ${size}px;
+    where:
+      size: true
+  - token: backgroundColor={${color}}
+    where:
+      color: true
+```
+
+In this case, the following character will be used to detect the range of binding. In the first example above, the `px` will be used as the marker for the end of `size` binding.
+
+If parens are surrounding the variable, Goodcheck tries to match with nested ones in the variable. It expands five levels of nesting of parens. See the example of matches with the second `backgroundColor` pattern:
+
+- `backgroundColor={color}` Matches (`color=="color"`)
+- `backgroundColor={{ red: red(), green: green(), blue: green()-1 }}` Matches (`color=="{ red: red(), green: green(), blue: green()-1 }"`)
+- `backgroundColor={ {{{{{{}}}}}} }` Matches (`color==" {{{{{{}}}}}"`)
+
 ### *glob*
 
 A *glob* can be a string, or a hash.
