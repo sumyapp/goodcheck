@@ -3,7 +3,7 @@
 # Goodcheck - Regexp based customizable linter
 
 Are you reviewing a pull request if the change contains deprecated API calls?
-Do you want to post a comment to ask the developer if a method call satisfies some condition to use that without causing an issue?
+Do you want to post a comment to ask the developer if a method call satisfies some condition for use without causing an issue?
 What if a misspelling like `Github` for `GitHub` can be found automatically?
 
 Give Goodcheck a try to do them instead of you! 🎉
@@ -11,8 +11,8 @@ Give Goodcheck a try to do them instead of you! 🎉
 Goodcheck is a customizable linter.
 You can define pairs of patterns and messages.
 It checks your program and when it detects a piece of text matching with the defined patterns, it prints your message which tells your teammates why it should be revised and how.
-Some part of code reviewing process can be automated.
-Everything you have to do is to define the rules, pairs of patterns and messages, and nothing will bother you. 😆
+Some part of the code reviewing process can be automated.
+With Goodcheck the only thing you have to do is define the rules, pairing patterns with messages, and then those same patterns won’t bother you anymore. 😆
 
 ## Installation
 
@@ -32,7 +32,7 @@ $ vim goodcheck.yml
 $ goodcheck check
 ```
 
-The `init` command generates template of `goodcheck.yml` configuration file for you.
+The `init` command generates a template of `goodcheck.yml` configuration file for you.
 Edit the config file to define patterns you want to check.
 Then run `check` command, and it will print matched texts.
 
@@ -42,7 +42,7 @@ You can download a [printable cheatsheet](cheatsheet.pdf) from this repository.
 
 ## `goodcheck.yml`
 
-An example of configuration is like the following:
+An example of the configuration is like the following:
 
 ```yaml
 rules:
@@ -69,10 +69,10 @@ The *rule* hash contains the following keys.
 * `id`: a string to identify rules (required)
 * `pattern`: a *pattern* or a sequence of *pattern*s
 * `message`: a string to tell writers why the code piece should be revised (required)
-* `justification`: a sequence of strings to tell writers when a exception can be allowed (optional)
+* `justification`: a sequence of strings to tell writers when an exception can be allowed (optional)
 * `glob`: a *glob* or a sequence of *glob*s (optional)
-* `pass`: a string, or a sequence of strings, which does not match given pattern (optional)
-* `fail`: a string, or a sequence of strings, which does match given pattern (optional)
+* `pass`: a string, or a sequence of strings, which does not match the given pattern (optional)
+* `fail`: a string, or a sequence of strings, which does match the given pattern (optional)
 
 ### *pattern*
 
@@ -84,8 +84,8 @@ String literal represents a *literal pattern* or *regexp pattern*.
 
 ```yaml
 pattern:
-  - This is literal pattern
-  - /This is regexp pattern/
+  - This is a literal pattern
+  - /This is a regexp pattern/
 ```
 
 If the string value begins with `/` and ends with `/`, it is a *regexp pattern*.
@@ -125,7 +125,7 @@ It accepts two optional attributes, `case_sensitive` and `multiline`.
 The default values of `case_sensitive` and `multiline` are `true` and `false` respectively.
 
 The regexp will be passed to `Regexp.compile`.
-The precise definition of regular expression can be found in the documentation for Ruby.
+The precise definition of regular expressions can be found in the documentation for Ruby.
 
 #### *token pattern*
 
@@ -142,7 +142,7 @@ justification:
   - If Lynx is the major target of the web site
 ```
 
-It tries to tokenize the input and generates a regexp which matches sequence of tokens.
+It tries to tokenize the input and generates a regexp which matches a sequence of tokens.
 The tokenization is heuristic and may not work well for your programming language.
 In that case, try using *regexp pattern*.
 
@@ -153,7 +153,7 @@ It accepts one optional attribute `case_sensitive`.
 The default value of `case_sensitive` is `true`.
 Note that the generated regexp is in multiline mode.
 
-Token pattern can have optional `where` attribute and *variable bindings*.
+Token patterns can have an optional `where` attribute and *variable bindings*.
 
 ```yaml
 pattern:
@@ -177,7 +177,7 @@ We have 8 built-in patterns:
 
 You can find the exact definitions of the types in the definition of `Goodcheck::Pattern::Token` (`@@TYPES`).
 
-You can omit the type of a variable binding.
+You can omit the type of variable binding.
 
 ```yaml
 pattern:
@@ -191,7 +191,7 @@ pattern:
 
 In this case, the following character will be used to detect the range of binding. In the first example above, the `px` will be used as the marker for the end of `size` binding.
 
-If parens are surrounding the variable, Goodcheck tries to match with nested ones in the variable. It expands five levels of nesting of parens. See the example of matches with the second `backgroundColor` pattern:
+If parens or brackets are surrounding the variable, Goodcheck tries to match with nested ones in the variable. It expands five levels of nesting. See the example of matches with the second `backgroundColor` pattern:
 
 - `backgroundColor={color}` Matches (`color=="color"`)
 - `backgroundColor={{ red: red(), green: green(), blue: green()-1 }}` Matches (`color=="{ red: red(), green: green(), blue: green()-1 }"`)
@@ -208,15 +208,15 @@ glob:
 ```
 
 The hash can have an optional `encoding` attribute.
-You can specify encoding of the file by the names defined for ruby.
+You can specify the encoding of the file by the names defined for Ruby.
 The list of all available encoding names can be found by `$ ruby -e "puts Encoding.name_list"`.
 The default value is `UTF-8`.
 
 If you write a string as a `glob`, the string value can be the `pattern` of the glob, without `encoding` attribute.
 
-If you omit `glob` attribute in a rule, the rule will be applied to all files given to `goodcheck`.
+If you omit the `glob` attribute in a rule, the rule will be applied to all files given to `goodcheck`.
 
-If both of your rule and its pattern has `glob`, Goodcheck will scan the pattern from the `glob` files in the pattern.
+If both your rule and its pattern has `glob`, Goodcheck will scan the pattern with files matching the `glob` condition in the pattern.
 
 ```yaml
 rules:
@@ -246,7 +246,7 @@ rules:
 ### A rule without `pattern`
 
 You can define a rule without `pattern`.
-The rule emits a issue on each file specified with `glob`.
+The rule emits an issue on each file specified with `glob`.
 You cannot omit `glob` from a rule definition without `pattern`.
 
 ```yaml
@@ -266,7 +266,7 @@ db/schema.rb:-:# This file is auto-generated from the current state of the datab
 
 ### Triggers
 
-Version 2.0.0 introduces new abstruction to define patterns, trigger.
+Version 2.0.0 introduces a new abstraction to define patterns, trigger.
 You can continue using `pattern`s in `rule`, but using `trigger` allows more flexible pattern definition and more precise testing.
 
 ```
@@ -289,12 +289,12 @@ rules:
           </html>
 ```
 
-You can continue existing `pattern` definitions, but `goodcheck test` against `pattern`s with `glob` does not work.
-If your `pattern` definition includes `glob`, switching `trigger` would make sense.
+You can continue existing `pattern` definitions, but using `goodcheck test` against `pattern`s with `glob` does not work.
+If your `pattern` definition includes `glob`, switching to `trigger` would make sense.
 
 ## Importing rules
 
-`goodcheck.yml` can have optional `import` attribute.
+`goodcheck.yml` can have an optional `import` attribute.
 
 ```yaml
 import:
@@ -303,17 +303,17 @@ import:
   - https://some.host/shared/rules.yml
 ```
 
-Value of `import` can be an array of:
+The value of `import` can be an array of:
 
 - A string which represents an absolute file path,
-- A string which represents an relative file path from config file, or
+- A string which represents a relative file path from the config file, or
 - A http/https URL which represents the location of rules
 
-The rules file is a YAML file with array of rules.
+The rules file is a YAML file with an array of rules.
 
 ## Excluding files
 
-`goodcheck.yml` can have optional `exclude` attribute.
+`goodcheck.yml` can have an optional `exclude` attribute.
 
 ```yaml
 exclude:
@@ -321,18 +321,18 @@ exclude:
   - vendor
 ```
 
-Value of `exclude` can be a string or an array of strings representing the glob pattern for excluded files.
+The value of `exclude` can be a string or an array of strings representing the glob pattern for excluded files.
 
 ## Commands
 
 ### `goodcheck init [options]`
 
-The `init` command generates an example of configuration file.
+The `init` command generates an example of a configuration file.
 
 Available options are:
 
 * `-c=[CONFIG]`, `--config=[CONFIG]` to specify the configuration file name to generate.
-* `--force` to allow overwriting existing config file.
+* `--force` to allow overwriting of an existing config file.
 
 ### `goodcheck check [options] targets...`
 
@@ -351,15 +351,15 @@ Available options are:
 * `--format=[text|json]` to specify output format.
 * `-v`, `--verbose` to be verbose.
 * `--debug` to print all debug messages.
-* `--force` to ignore downloaded caches
+* `--force` to ignore downloaded caches.
 
 `goodcheck check` exits with:
 
-* `0` when it does not find any matching text fragment
-* `2` when it finds some matching text
-* `1` when it finds some error
+* `0` when it does not find any matching text fragment.
+* `2` when it finds some matching text.
+* `1` when it finds some error.
 
-You can check its exit status to identify if the tool find some pattern or not.
+You can check its exit status to identify if the tool finds some pattern or not.
 
 ### `goodcheck test [options]`
 
@@ -370,7 +370,7 @@ The test contains:
 * If `pass` examples does not match with any of `pattern`s.
 * If `fail` examples matches with some of `pattern`s.
 
-Use `test` command when you add new rule to be sure you are writing rules correctly.
+Use `test` command when you add a new rule to be sure you are writing rules correctly.
 
 Available options are:
 
@@ -384,7 +384,7 @@ Available options are:
 The `pattern` command prints the regular expressions generated from the patterns.
 The command is for debugging patterns, especially token patterns.
 
-Available option is:
+The available option is:
 
 * `-c [CONFIG]`, `--config=[CONFIG]` to specify the configuration file.
 
