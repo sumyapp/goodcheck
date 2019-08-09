@@ -5,7 +5,8 @@ sidebar_label: Rules
 ---
 
 
-## Rule: "_blank" Security Issue
+## Rule: `"_blank"` Security Issue
+
 When `target = "_blank"` is used, the opened page can access the original window object and potentially redirect the original page to a malicious URL. In this example, the rule will look for patterns of `"_blank"` and suggest to use `rel="noopener"` to prevent the opened page from having access.
 
 ```yaml
