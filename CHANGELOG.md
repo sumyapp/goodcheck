@@ -2,6 +2,10 @@
 
 ## master
 
+## 2.4.1 (2019-08-29)
+
+* Relax dependency requirement for ActiveSupport [#68](https://github.com/sider/goodcheck/pull/68)
+
 ## 2.4.0 (2019-07-11)
 
 * Add `pattern` command to print regexp of patterns [#63](https://github.com/sider/goodcheck/pull/63)
