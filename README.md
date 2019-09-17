@@ -269,7 +269,7 @@ db/schema.rb:-:# This file is auto-generated from the current state of the datab
 Version 2.0.0 introduces a new abstraction to define patterns, trigger.
 You can continue using `pattern`s in `rule`, but using `trigger` allows more flexible pattern definition and more precise testing.
 
-```
+```yaml
 rules:
   - id: trigger
     message: Using trigger
